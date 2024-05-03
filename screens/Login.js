@@ -104,15 +104,20 @@ export default class Login extends Component {
             "userName": this.state.username,
             "password": this.state.password,
         });
+        console.log("request body: " + request_body);
+        console.log("request body: " + base_url+"/user-login")
         fetch(base_url+"/user-login", {
             method: 'POST',
             headers: {
-                Accept: 'application/json',
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
             },
             body: request_body,
         })
         .then((response) => {
+            console.log("response:" + response)
+            console.log("response json:" + response.json)
+            console.log("response:" + response.ok)
             if(response.ok) {
                 response.json().then((responseJson) => {
                     console.log("*******Login json********");
@@ -140,6 +145,7 @@ export default class Login extends Component {
             }
         })
         .catch((error)=> {
+            console.log("This is error: " + error);
             this.setState({ isLoggingIn: false, message: responseJson.comments });
             this.setState({showLoader: false,loaderIndex:0});
         })

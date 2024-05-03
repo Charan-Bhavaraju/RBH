@@ -1,6 +1,6 @@
 import base64 from 'react-native-base64';
 import {getPassword, getUserName} from './LoginConstant';
-export let base_url = 'http://ec2-52-15-142-234.us-east-2.compute.amazonaws.com:8080/api/v1'
+export let base_url = 'http://10.0.2.2:8080/api/v1'
 
 export async function getDataAsync(url){
     try{
