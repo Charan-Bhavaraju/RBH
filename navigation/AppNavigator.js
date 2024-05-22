@@ -1,7 +1,7 @@
 import React from 'react'
 import { createAppContainer } from 'react-navigation';
 import { createDrawerNavigator } from 'react-navigation-drawer';
-import { Home, AddChild, ViewChild, Report, LoginScreen } from './Navigation';
+import { Home, AddChild, ViewChild, AddDonor, Report, LoginScreen, SearchDonor } from './Navigation';
 import {Feather} from '@expo/vector-icons';
 import SideBar from '../components/SideBar';
 
@@ -25,6 +25,20 @@ const DrawerNavigator = createDrawerNavigator({
         screen: ViewChild,
         navigationOptions: {
             title: "View/Update Child",
+            drawerIcon: ({tintColor}) => <Feather name="users" size={20} color={tintColor}/>
+        }
+    },
+    AddDonor: {
+        screen: AddDonor,
+        navigationOptions: {
+            title: "Donate",
+            drawerIcon: ({tintColor}) => <Feather name="users" size={20} color={tintColor}/>
+        }
+    },
+    SearchDonor: {
+        screen: SearchDonor,
+        navigationOptions: {
+            title: "Search Donor",
             drawerIcon: ({tintColor}) => <Feather name="users" size={20} color={tintColor}/>
         }
     }

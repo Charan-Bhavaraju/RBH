@@ -5,6 +5,8 @@ import ChildList from "../components/ChildList";
 import Test from "../components/Test";
 import StackNavigation from '../navigation/StackNavigation';
 import AddChild from '../components/AddChildForm'
+import AddDonor from '../components/AddDonorForm';
+import SearchDonor from '../components/SearchDonor';
 import AddChildNavigation from '../navigation/AddChildNavigation';
 
 export default class PresentScreen extends Component {
@@ -18,6 +20,12 @@ export default class PresentScreen extends Component {
         }
         else if (this.props.screen === 'viewChild') {
             return <StackNavigation screenProps={this.props.navigation} />;
+        }
+        else if (this.props.screen === 'addDonor') {
+            return <AddDonor screenProps={this.props.navigation} />;
+        }
+        else if (this.props.screen === 'searchDonor') {
+            return <SearchDonor screenProps={this.props.navigation} />;
         }
         else if (this.props.screen === 'report') {
             return <Text>Report Screen</Text>;
