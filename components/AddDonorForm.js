@@ -89,27 +89,6 @@ export default class AddDonor extends React.Component{
     }
 
 
-    async _pickImage (handleChange) {
-        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-        if(status == 'granted'){
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.All,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 1
-            });
-            if (!result.cancelled) {
-                console.log("image uri")
-                console.log(result.uri);
-                this.setState({ image: result.uri });
-                imagePath = result.uri;
-                console.log(this.state.image);
-                console.log(typeof(result.uri))
-                handleChange(result.uri)
-            }
-        }
-    }
-
     async addChildConstants(){
         getDataAsync(base_url + '/religions').then(data => { this.setState({religions: data})});
     
