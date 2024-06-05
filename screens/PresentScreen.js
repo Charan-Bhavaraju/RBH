@@ -6,6 +6,7 @@ import Test from "../components/Test";
 import StackNavigation from '../navigation/StackNavigation';
 import AddChild from '../components/AddChildForm'
 import AddDonor from '../components/AddDonorForm';
+import AddDonor3 from '../components/AddDonorForm3';
 import SearchDonor from '../components/SearchDonor';
 import AddChildNavigation from '../navigation/AddChildNavigation';
 
@@ -23,6 +24,9 @@ export default class PresentScreen extends Component {
         }
         else if (this.props.screen === 'addDonor') {
             return <AddDonor screenProps={this.props.navigation} />;
+        }
+        else if (this.props.screen === 'addDonor3') {
+            return <AddDonor3 screenProps={this.props.navigation} />;
         }
         else if (this.props.screen === 'searchDonor') {
             return <SearchDonor screenProps={this.props.navigation} />;
