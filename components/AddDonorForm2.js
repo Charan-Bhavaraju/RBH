@@ -19,15 +19,12 @@ import {buildTestImageName, buildProdImageName} from '../constants/ChildConstant
 import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
-const AddDonorSchema3 = yup.object({
-    InkindItem: yup.string().required(),
-    BudgetedFromDonation: yup.string().required(),
-    UnBudgetedFromDonation: yup.string().required(),
-    DonationReason: yup.string().required(),
-    DonationAdditionalNotes: yup.string().required(),
-    SpecialDayDate: yup.string().required(),
-    PurposeOfDonation: yup.string().required(),
-    DonorPreference: yup.string().required()
+const AddDonorSchema2 = yup.object({
+    DonationDate: yup.string().required(),
+    ProgramType: yup.string().required(),
+    PaymentMode: yup.string().required(),
+    Amount: yup.string().required(),
+    Quantity: yup.string().required()
 });
 
 let imagePath = null;
@@ -35,16 +32,14 @@ let imagePath = null;
 const defaultImg = require('../assets/person.png');
 
 export default class AddDonor extends React.Component{
-
+    
     state = {
         loaderIndex: 0,
         showLoader: false,
-        inkinditems: [],
-        donationreasons: [],
-        purposeofdonation: [],
-        specialdaydate: '',
-        showsdd: false,
-        donorpreference: 2,
+        programtypes: [],
+        paymentmodes: [],
+        donationdate: '',
+        showdd: false,
         isVisible: false,
         sucessDisplay: false,
         errorDisplay: false,
@@ -57,17 +52,13 @@ export default class AddDonor extends React.Component{
 
 
     async addDonorConstants(){
-        // getDataAsync(base_url + '/inkinditems').then(data => { this.setState({religions: data})});
-        let inkinditemsdata = [{'InkindItemId' : 1, 'InkindItem': 'Food'},{'InkindItemId' : 2, 'InkindItem': 'Clothes'}]
-        this.setState({inkinditems: inkinditemsdata})
+        // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
+        let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
+        this.setState({programtypes: programtypesdata})
 
-        // getDataAsync(base_url + '/donationreasons').then(data => { this.setState({communities: data})});
-        let donationreasonsdata =[{'DonationReasonId' : 1, 'DonationReason': 'Self Birthday'},{'DonationReasonId' : 2, 'DonationReason': 'Wedding Anniversary'},{'DonationReasonId' : 3, 'DonationReason': 'Festival'},{'DonationReasonId' : 4, 'DonationReason': 'Just wanted to donate'}]
-        this.setState({donationreasons: donationreasonsdata})
-
-        // getDataAsync(base_url + '/purposeofdonation').then(data => { this.setState({communities: data})});
-        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
-        this.setState({purposeofdonation: purposeofdonationdata})
+        // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
+        let paymentmodesdata =[{'PaymentModeId' : 1, 'PaymentMode': 'Inkind'},{'PaymentModeId' : 2, 'PaymentMode': 'Cash'},{'PaymentModeId' : 3, 'PaymentMode': 'Cheque'},{'PaymentModeId' : 4, 'PaymentMode': 'UPI'},{'PaymentModeId' : 5, 'PaymentMode': 'Online'}]
+        this.setState({paymentmodes: paymentmodesdata})
     }
 
     loadStats(){
@@ -94,46 +85,34 @@ export default class AddDonor extends React.Component{
         this.setState({orgid: orgId});
         this.addDonorConstants();
     }
-    _pickSdd = (event,date,handleChange) => {
+
+    _pickDd = (event,date,handleChange) => {
         if(event["type"] == "dismissed") {
 
         }
         else {
             let a = moment(date).format('YYYY-MM-DD');
-            this.setState({specialdaydate:a, showsdd: false});
+            this.setState({donationdate:a, showdd: false});
             handleChange(a);
         }
     }
 
-    _alertUser() {
-        Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('home')}],
-        {cancelable: false},);
-    }
-
     resetdatesandradio() {
         this.setState({specialdaydate:''});
-        this.setState({donorpreference: 2});
     }
 
-    showDatepickerSDD = () => {
-        this.setState({showsdd: true});
+    showDatepickerDD = () => {
+        this.setState({showdd: true});
     };
-
-    _changeDonorPreference = (value, handleChange) => {
-        this.setState({donorpreference: value});
-        console.log(value);
-        handleChange(value);
-    }
 
     _submitAddDonorForm(values) {
         console.log("submitdonor called");
         let request_body = JSON.stringify({
-            "DonorName": values.DonorName,
-            "DonorType": values.DonorType,
-            "Source": values.Source,
-            "PhoneNumber": values.PhoneNumber,
-            "Email": values.Email,
-            "PAN": values.PAN
+            "DonationDate": values.DonationDate,
+            "ProgramType": values.ProgramType,
+            "PaymentMode": values.PaymentMode,
+            "Amount": values.Amount,
+            "Quantity": values.Quantity
         });
         console.log(request_body);
         // var imageupload = false;
@@ -257,34 +236,21 @@ export default class AddDonor extends React.Component{
     }
 
     render() {
-        const radio_props = [
-            {
-                label: 'Send Thank You SMS',
-                value: '1',
-            },
-            {
-                label: 'Send Thank You SMS and Receipt',
-                value: '2',
-            }
-        ];
-
+ 
         return (
             <View style = {globalStyles.container}>
                 
                 <Formik
                 initialValues = {
                     {
-                        InkindItem: '',
-                        BudgetedFromDonation: '',
-                        UnBudgetedFromDonation: '',
-                        DonationReason: '',
-                        DonationAdditionalNotes: '',
-                        SpecialDayDate: this.state.specialdaydate,
-                        PurposeOfDonation:'',
-                        DonorPreference:1
+                        DonationDate: this.state.donationdate,
+                        ProgramType: '',
+                        PaymentMode: '',
+                        Amount: '',
+                        Quantity: ''
                     }
                 }
-                validationSchema = {AddDonorSchema3}
+                validationSchema = {AddDonorSchema2}
                 onSubmit = {async (values, actions) => {
                     // this.setState({showLoader: true,loaderIndex:10});
                     this.setState({submitButtonDisabled: true});
@@ -292,7 +258,7 @@ export default class AddDonor extends React.Component{
                     let alertMessage = this.state.submitAlertMessage;
                     console.log(result);
                     this.setState({submitButtonDisabled: false});
-                    this._alertUser()
+                    this.props.navigation.navigate('Enter Donation Details ');
                 }}
                 >
                     {props => (
@@ -306,156 +272,104 @@ export default class AddDonor extends React.Component{
                             <View style= {globalStyles.topView}>
                                 {this.state.pageOne && <View>
                                     <View style={globalStyles.backgroundlogoimageview}>
-                                        <Image source = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
+                                        <Image PaymentMode = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
                                 
                                 <View style={globalStyles.PageHeaderView}>
                                     <Text style={globalStyles.PageHeader}>Enter Donation Details</Text>
                                 </View>
 
-                                {/* Inkind Item  */}
-                                <Text style = {globalStyles.label}>Inkind Item <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.InkindItem}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('InkindItem', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Inkind Item' color='grey' value = ''/>
-                                    { 
-                                        this.state.inkinditems.map((item) => {
-                                            return <Picker.Item key = {item.InkindItemId} label = {item.InkindItem} value = {item.InkindItemId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonorType && props.errors.DonorType}</Text>
-                                
-                                {/* Budgeted from donation */}
-                                <Text style = {globalStyles.label}>Budgeted from donation <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('BudgetedFromDonation')}
-                                    value = {props.values.BudgetedFromDonation}z
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.BudgetedFromDonation && props.errors.BudgetedFromDonation}</Text>
-
-                                {/* Un-Budgeted from donation */}
-                                <Text style = {globalStyles.label}>UnBudgeted from donation<Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('UnBudgetedFromDonation')}
-                                    value = {props.values.UnBudgetedFromDonation}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.UnBudgetedFromDonation && props.errors.UnBudgetedFromDonation}</Text>      
-
-                                <Text style={{textAlignVertical: "center",textAlign: "right",}}>Total: {Number(props.values.BudgetedFromDonation) + Number(props.values.UnBudgetedFromDonation)}</Text>
-                                
-                                {/* Donation Reason */}
-                                <Text style = {globalStyles.label}>Donation Reason <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.DonationReason}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('DonationReason', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='DonationReason' color='grey' value = ''/>
-                                    {
-                                        this.state.donationreasons.map((item) => {
-                                            return <Picker.Item key = {item.DonationReasonId} label = {item.DonationReason} value = {item.DonationReasonId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonationReason && props.errors.DonationReason}</Text>
-                                
-
-                                {/* Donation Additional Notes */}
-                                <Text style = {globalStyles.label}>Donation Additional Notes <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('DonationAdditionalNotes')}
-                                    value = {props.values.DonationAdditionalNotes}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonationAdditionalNotes && props.errors.DonationAdditionalNotes}</Text>
-
-                                {/* Special Day Date */}
-                                <Text style = {globalStyles.label}>Special Day Date<Text style={{color:"red"}}>*</Text> :</Text>
+                                {/* Donation Date */}
+                                <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
                                 <View style={globalStyles.dobView}>
                                     <TextInput
                                         style = {globalStyles.inputText, globalStyles.dobValue}
-                                        value = {this.state.specialdaydate}
+                                        value = {this.state.donationdate}
                                         editable = {false}
-                                        onValueChange = {props.handleChange('SpecialDayDate')}
+                                        onValueChange = {props.handleChange('DonationDate')}
                                     />
-                                    <TouchableHighlight onPress={this.showDatepickerSDD}>
+                                    <TouchableHighlight onPress={this.showDatepickerDD}>
                                         <View>
                                             <Feather style={globalStyles.dobBtn}  name="calendar"/>
                                         </View>
                                     </TouchableHighlight>
                                     {/* <Button style= {globalStyles.dobBtn} onPress={this.showDatepicker} title="Select DOB" /> */}
-                                    {this.state.showsdd && 
+                                    {this.state.showdd && 
                                         <DateTimePicker
                                             style={{width: 200}}
                                             mode="date" //The enum of date, datetime and time
                                             value={ new Date() }
                                             mode= { 'date' }
-                                            onChange= {(e,date) => this._pickSdd(e,date,props.handleChange('SpecialDayDate'))} 
+                                            onChange= {(e,date) => this._pickDd(e,date,props.handleChange('DonationDate'))} 
+                                            maximumDate= { new Date() }
                                         />
                                     }
                                 </View>
-                                <Text style = {globalStyles.errormsg}>{props.touched.SpecialDayDate && props.errors.SpecialDayDate}</Text>
+                                <Text style = {globalStyles.errormsg}>{props.touched.DonationDate && props.errors.DonationDate}</Text>
 
-                                {/* Purpose Of Donation */}
-                                <Text style = {globalStyles.label}>Purpose Of Donation<Text style={{color:"red"}}>*</Text> :</Text>
+                                {/* Program Type */}
+                                <Text style = {globalStyles.label}>Program Type<Text style={{color:"red"}}>*</Text> :</Text>
                                 <Picker
-                                    selectedValue = {props.values.PurposeOfDonation}
+                                    selectedValue = {props.values.ProgramType}
                                     onValueChange = {value => {
-                                        props.setFieldValue('PurposeOfDonation', value);
+                                        props.setFieldValue('ProgramType', value);
                                     }}
                                     style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label='Purpose Of Donation' color='grey' value = ''/>
-                                    {
-                                        this.state.purposeofdonation.map((item) => {
-                                            return <Picker.Item key = {item.PurposeOfDonationId} label = {item.PurposeOfDonation} value = {item.PurposeOfDonationId}/>
+                                    <Picker.Item label='Program Type' color='grey' value = ''/>
+                                    { 
+                                        this.state.programtypes.map((item) => {
+                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
                                         })
                                     }
                                 </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.PurposeOfDonation && props.errors.PurposeOfDonation}</Text>
-                                                                                                
-                                {/* Donor Preference */}
-                                <Text style = {globalStyles.label}>Donor Preference <Text style={{color:"red"}}>*</Text> :</Text>
-                                {/* <Picker
-                                    selectedValue = {props.values.Gender}
-                                    onValueChange = {props.handleChange('Gender')}
+                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
+                                
+                                
+                                
+                                {/* PaymentMode */}
+                                <Text style = {globalStyles.label}>Payment Mode <Text style={{color:"red"}}>*</Text> :</Text>
+                                <Picker
+                                    selectedValue = {props.values.PaymentMode}
+                                    onValueChange = {value => {
+                                        props.setFieldValue('PaymentMode', value);
+                                    }}
                                     style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label='Select Gender' value = ''/>
-                                    <Picker.Item label='Male' value = '1'/>
-                                    <Picker.Item label='Female' value = '2'/>
-                                </Picker> */}
-                                <RadioForm
-                                        style={{marginLeft: 10}}
-                                        radio_props={radio_props}
-                                        buttonSize={10}
-                                        buttonOuterSize={20}
-                                        buttonColor={'black'}
-                                        buttonInnerColor={'black'}
-                                        selectedButtonColor={'blue'}
-                                        formHorizontal={false}
-                                        onPress={(value) => this._changeDonorPreference(value,props.handleChange('DonorPreference'))}
+                                    <Picker.Item label='PaymentMode' color='grey' value = ''/>
+                                    {
+                                        this.state.paymentmodes.map((item) => {
+                                            return <Picker.Item key = {item.PaymentModeId} label = {item.PaymentMode} value = {item.PaymentModeId}/>
+                                        })
+                                    }
+                                </Picker>
+                                <Text style = {globalStyles.errormsg}>{props.touched.PaymentMode && props.errors.PaymentMode}</Text>
+                                
+
+                                {/* Amount/Worth of Inkind */}
+                                <Text style = {globalStyles.label}>Amount/Worth of In-kind <Text style={{color:"red"}}>*</Text> :</Text>
+                                <TextInput
+                                    keyboardType="numeric"
+                                    style = {globalStyles.inputText}
+                                    onChangeText = {props.handleChange('Amount')}
+                                    value = {props.values.Amount}
+                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
                                 />
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonorPreference && props.errors.DonorPreference}</Text>
+                                <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
+                                
+                                {/* Quantity/Days */}
+                                <Text style = {globalStyles.label}>Quantity/Days <Text style={{color:"red"}}>*</Text> :</Text>
+                                <TextInput
+                                    keyboardType="numeric"
+                                    style = {globalStyles.inputText}
+                                    onChangeText = {props.handleChange('Quantity')}
+                                    value = {props.values.Quantity}
+                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
+                                />
+                                <Text style = {globalStyles.errormsg}>{props.touched.Quantity && props.errors.Quantity}</Text>
+                                 
 
-
-
-                                <Button style = {globalStyles.button} title="Submit" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
+                                <Button style = {globalStyles.button} title="Next" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
                                 </View>}
                             </View>
                         </ScrollView>  
