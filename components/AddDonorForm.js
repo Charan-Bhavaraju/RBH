@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { Component } from 'react';
+import MultiSelect from 'react-native-multiple-select';
+
 import {Button, Text, TextInput, View, Picker, ScrollView,
     KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -19,6 +21,7 @@ import {buildTestImageName, buildProdImageName} from '../constants/ChildConstant
 import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
+
 const AddDonorSchema = yup.object({
     DonorID: yup.string(),
     DonorName: yup.string().required(),
@@ -30,11 +33,42 @@ const AddDonorSchema = yup.object({
 });
 
 let imagePath = null;
-
 const defaultImg = require('../assets/person.png');
 
+//const items = [
+//    {
+//    id: '92iijs7yta',
+//    name: 'Ondo'
+//  }, {
+//    id: 'a0s0a8ssbsd',
+//    name: 'Ogun'
+//  }, {
+//    id: '16hbajsabsd',
+//    name: 'Calabar'
+//  }, {
+//    id: 'nahs75a5sg',
+//    name: 'Lagos'
+//  }, {
+//    id: '667atsas',
+//    name: 'Maiduguri'
+//  }, {
+//    id: 'hsyasajs',
+//    name: 'Anambra'
+//  }, {
+//    id: 'djsjudksjd',
+//    name: 'Benue'
+//  }, {
+//    id: 'sdhyaysdj',
+//    name: 'Kaduna'
+//  }, {
+//    id: 'suudydjsjd',
+//    name: 'Abuja'
+//    }
+//];
+
+
 export default class AddDonor extends React.Component{
-    
+
     state = {
         loaderIndex: 0,
         showLoader: false,
@@ -48,8 +82,22 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
+        openSourceDropDown: false,
+        items: []
+        selectedItems : []
     };
 
+    fetchItemsData() {
+         axios.get(`https://jsonplaceholder.typicode.com/users`)
+              .then(res => {
+                const dataItems = res.data;
+                 this.setState({ items: dataItems});
+              })
+    }
+
+    onSelectedItemsChange = selectedItems => {
+        this.setState({ selectedItems });
+      };
 
     async addDonorConstants(){
         // getDataAsync(base_url + '/donortypes').then(data => { this.setState({religions: data})});
@@ -57,9 +105,12 @@ export default class AddDonor extends React.Component{
         this.setState({donortypes: donortypesdata})
 
         // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
-        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-        this.setState({sources: sourcesdata})
+//        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
+//
+//        this.setState({setStateources: [{ 'label': 'Item 1', 'Source': 'item1' }]})
     }
+
+
 
     loadStats(){
         getDataAsync(base_url + '/dashboard/' + getOrgId())
@@ -84,7 +135,21 @@ export default class AddDonor extends React.Component{
         let orgId = getOrgId();
         this.setState({orgid: orgId});
         this.addDonorConstants();
+        this.fetchItemsData();
     }
+
+    openDropDown = () => {
+        this.setState({
+             openSourceDropDown: !this.state.openSourceDropDown
+        })
+    }
+    setSources = () => {
+            this.setState({
+                 sources: this.items
+            })
+
+            console.log('TESTTSTST--->',this.state.openSourceDropDown)
+        }
 
     _submitAddDonorForm(values) {
         console.log("submitdonor called");
@@ -97,128 +162,12 @@ export default class AddDonor extends React.Component{
             "PAN": values.PAN
         });
         console.log(request_body);
-        // var imageupload = false;
-        // fetch(base_url+"/child", {
-        //     method: 'POST',
-        //     headers: {
-        //         Accept: 'application/json',
-        //         'Content-Type': 'application/json',
-        //         'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //     },
-        //     body: request_body,
-        // })
-        // .then((response) =>{
-        //     if(response.ok) {
-        //         console.log("printing status");
-        //         console.log(response.status);
-        //         console.log("printing status");
-        //         response.json().then((responseJson) => {
-        //             let DonorId = responseJson.childNo;
-        //             let childName = responseJson.DonorName;
-        //             this.loadStats();
-        //             let imageUri = '';
-        //             if(imagePath === null) {
-        //                 imageUri= ''
-        //             }
-        //             else {
-        //                 imageUri = imagePath;
-        //             }
-        //             console.log("Image URI");
-        //             console.log(imageUri);
-        //             console.log("Image URI");
-        //             let imageName = buildTestImageName(responseJson.childNo, responseJson.DonorName);
-        //             let photoUrl = base_url+"/upload-image/"+responseJson.childNo + imageName;
-        //             console.log(photoUrl);
-        //             var formdata = new FormData();
-        //             formdata.append('file', { uri: imageUri, name: `${imageName.split('/')[2]}.jpg`, type: 'image/jpg' });
-        //             fetch(photoUrl, {
-        //                 method: 'PUT',
-        //                 headers: {
-        //                     'content-type': 'multipart/form-data;boundary=----WebKitFormBoundaryyEmKNDsBKjB7QEqu',
-        //                     'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //                 },
-        //                 body: formdata,
-        //             })
-        //             .then((response) => {
-        //                 console.log("*****");
-        //                 console.log(response.status);
-        //                 console.log("******");
-        //                 if(response.status == 200) {
-        //                             this.state.photoUploadMessage = ". Succesfully uploaded image";
-        //                             imageupload = true;
-        //                 }
-        //                 else {
-        //                             this.state.photoUploadMessage = ". Error uploading image";
-        //                 }
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                             'Added Child',
-        //                             this.state.submitAlertMessage,
-        //                             [
-        //                                 { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                             ],
-        //                             { cancelable: false },
-        //                 ); 
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //             .catch((error)=> {
-        //                 this.state.photoUploadMessage = ".Error uploading image";
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                     'Added Child',
-        //                     this.state.submitAlertMessage,
-        //                     [
-        //                         { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                     ],
-        //                     { cancelable: false },
-        //                 );
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //         })
-        //     }
-        //     else {
-        //         if(response.status == 500) {
-        //             response.json().then((responseJson) => {
-        //                 console.log(responseJson)
-        //                 if(responseJson.message == "Duplicate profile") {
-        //                     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //                     Alert.alert(
-        //                         'Failed To Add Child',
-        //                         responseJson.message+". Child already present.",
-        //                         [
-        //                             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //                         ],
-        //                         { cancelable: false },
-        //                     );
-        //                     this.setState({isVisible: true, errorDisplay: true});
-        //                     this.setState({showLoader: false,loaderIndex:0});
-        //                 }
-        //             })
-        //         }
-        //         else {
-        //             throw Error(response.status);
-        //         }
-        //     }
-        // })
-        // .catch((error) => {
-        //     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //     Alert.alert(
-        //         'Failed To Add Child',
-        //         this.state.submitAlertMessage,
-        //         [
-        //             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //         ],
-        //         { cancelable: false },
-        //     );
-        //     this.setState({isVisible: true, errorDisplay: true});
-        //     this.setState({showLoader: false,loaderIndex:0});
-        // });
     }
 
+
     render() {
- 
+        const { selectedItems } = this.state;
+
         return (
             <View style = {globalStyles.container}>
                 
@@ -296,20 +245,28 @@ export default class AddDonor extends React.Component{
                                 
                                 {/* Source */}
                                 <Text style = {globalStyles.label}>Source <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.Source}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('Source', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Source' color='grey' value = ''/>
-                                    {
-                                        this.state.sources.map((item) => {
-                                            return <Picker.Item key = {item.SourceId} label = {item.Source} value = {item.SourceId}/>
-                                        })
-                                    }
-                                </Picker>
+                                <MultiSelect
+                                          hideTags
+                                          items={items}
+                                          uniqueKey="id"
+                                          ref={(component) => { this.multiSelect = component }}
+                                          onSelectedItemsChange={this.onSelectedItemsChange}
+                                          selectedItems={selectedItems}
+                                          selectText="Pick Items"
+                                          searchInputPlaceholderText="Search Items..."
+                                          onChangeInput={ (text)=> console.log(text)}
+                                          altFontFamily="ProximaNova-Light"
+                                          tagRemoveIconColor="#CCC"
+                                          tagBorderColor="#CCC"
+                                          tagTextColor="#CCC"
+                                          selectedItemTextColor="#CCC"
+                                          selectedItemIconColor="#CCC"
+                                          itemTextColor="#000"
+                                          displayKey="name"
+                                          searchInputStyle={{ color: '#CCC' }}
+                                          submitButtonColor="#CCC"
+                                          submitButtonText="Submit"
+                                        />
                                 <Text style = {globalStyles.errormsg}>{props.touched.Source && props.errors.Source}</Text>
                                 
 
