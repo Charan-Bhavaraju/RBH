@@ -8,7 +8,7 @@ import AddChild from '../components/AddChildForm'
 import AddDonor from '../components/AddDonorForm';
 import AddDonor2 from '../components/AddDonorForm2';
 import AddDonor3 from '../components/AddDonorForm3';
-import DonorFormStackNavigator from '../components/DonorForm';
+import DonorFormStackNavigator from '../navigation/DonorFormNavigation';
 import SearchDonor from '../components/SearchDonor';
 import AddChildNavigation from '../navigation/AddChildNavigation';
 

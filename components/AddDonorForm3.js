@@ -20,14 +20,14 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const AddDonorSchema3 = yup.object({
-    InkindItem: yup.string().required(),
-    BudgetedFromDonation: yup.string().required(),
-    UnBudgetedFromDonation: yup.string().required(),
-    DonationReason: yup.string().required(),
-    DonationAdditionalNotes: yup.string().required(),
-    SpecialDayDate: yup.string().required(),
-    PurposeOfDonation: yup.string().required(),
-    DonorPreference: yup.string().required()
+    InkindItem: yup.string(),//.required(),
+    BudgetedFromDonation: yup.string(),//.required(),
+    UnBudgetedFromDonation: yup.string(),//.required(),
+    DonationReason: yup.string(),//.required(),
+    DonationAdditionalNotes: yup.string(),//.required(),
+    SpecialDayDate: yup.string(),//.required(),
+    PurposeOfDonation: yup.string(),//.required(),
+    DonorPreference: yup.string(),//.required()
 });
 
 let imagePath = null;
@@ -106,7 +106,7 @@ export default class AddDonor extends React.Component{
     }
 
     _alertUser() {
-        Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('home')}],
+        Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('AddDonor')}],
         {cancelable: false},);
     }
 
@@ -127,13 +127,20 @@ export default class AddDonor extends React.Component{
 
     _submitAddDonorForm(values) {
         console.log("submitdonor called");
+        console.log("Props", this.props.navigation.state.params.donorDetails, this.props.navigation.state.params.contributionPage1)
+
+        // call add donor
+        // get user info
+
         let request_body = JSON.stringify({
-            "DonorName": values.DonorName,
-            "DonorType": values.DonorType,
-            "Source": values.Source,
-            "PhoneNumber": values.PhoneNumber,
-            "Email": values.Email,
-            "PAN": values.PAN
+            "InkindItem": values.InkindItem,
+            "BudgetedFromDonation": values.BudgetedFromDonation,
+            "UnBudgetedFromDonation": values.UnBudgetedFromDonation,
+            "DonationReason": values.DonationReason,
+            "DonationAdditionalNotes": values.DonationAdditionalNotes,
+            "SpecialDayDate": values.SpecialDayDate,
+            "PurposeOfDonation": values.PurposeOfDonation,
+            "DonorPreference": values.DonorPreference
         });
         console.log(request_body);
         // var imageupload = false;
@@ -308,10 +315,8 @@ export default class AddDonor extends React.Component{
                                     <View style={globalStyles.backgroundlogoimageview}>
                                         <Image source = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
-                                
-                                <View style={globalStyles.PageHeaderView}>
-                                    <Text style={globalStyles.PageHeader}>Enter Donation Details</Text>
-                                </View>
+
+                           
 
                                 {/* Inkind Item  */}
                                 <Text style = {globalStyles.label}>Inkind Item <Text style={{color:"red"}}>*</Text> :</Text>

@@ -79,6 +79,7 @@ export const globalStyles = StyleSheet.create({
     PageHeader: {
         fontSize: 20,
         fontWeight: 'bold',
+        marginBottom: 10,
     },
     dropDown: {
         marginTop: -7,

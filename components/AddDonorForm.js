@@ -21,12 +21,12 @@ import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const AddDonorSchema = yup.object({
     DonorID: yup.string(),
-    DonorName: yup.string().required(),
-    DonorType: yup.string().required(),
-    Source: yup.string().required(),
-    PhoneNumber: yup.string().required().length(10, 'Phonenumber must be 10 digits long'),
-    Email: yup.string().required(),
-    PAN: yup.string().required()
+    DonorName: yup.string(),//.required(),
+    DonorType: yup.string(),//.required(),
+    Source: yup.string(),//.required(),
+    PhoneNumber: yup.string(),//.required().length(10, 'Phonenumber must be 10 digits long'),
+    Email: yup.string(),//.required().email('Please enter a valid email address'),
+    PAN: yup.string()//.required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
 });
 
 let imagePath = null;
@@ -48,6 +48,7 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
+        donorDetails: ""
     };
 
 
@@ -86,7 +87,7 @@ export default class AddDonor extends React.Component{
         this.addDonorConstants();
     }
 
-    _submitAddDonorForm(values) {
+    async _submitAddDonorForm(values) {
         console.log("submitdonor called");
         let request_body = JSON.stringify({
             "DonorName": values.DonorName,
@@ -96,7 +97,9 @@ export default class AddDonor extends React.Component{
             "Email": values.Email,
             "PAN": values.PAN
         });
+        console.log(getUserName(), getPassword());
         console.log(request_body);
+        this.setState({donorDetails: request_body})
         // var imageupload = false;
         // fetch(base_url+"/child", {
         //     method: 'POST',
@@ -242,7 +245,7 @@ export default class AddDonor extends React.Component{
                     let alertMessage = this.state.submitAlertMessage;
                     console.log(result);
                     this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('Enter Donation Details');
+                    this.props.navigation.navigate('AddDonor2', {donorDetails: this.state.donorDetails});
                 }}
                 >
                     {props => (
@@ -341,6 +344,7 @@ export default class AddDonor extends React.Component{
                                     onChangeText = {props.handleChange('PAN')}
                                     value = {props.values.PAN}
                                     placeholder='PAN'
+                                    autoCapitalize="characters" 
                                 />
                                 <Text style = {globalStyles.errormsg}>{props.touched.PAN && props.errors.PAN}</Text>
                                                                                                 

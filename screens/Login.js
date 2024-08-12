@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import {base_url} from '../constants/Base';
 import {globalStyles} from '../styles/global';
-import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword } from '../constants/LoginConstant'
+import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome } from '../constants/LoginConstant'
 import base64 from 'react-native-base64';
 
 export default class Login extends Component {
@@ -85,10 +85,38 @@ export default class Login extends Component {
         setOrgId(id);
     }
 
+    updateUserId(id) {
+        setUserId(id);
+    }
+
     updateHomeCode(code) {
         setHomeCode(code);
         setUserName(this.state.username);
         setPassword(this.state.password)
+    }
+
+    _getUserInfo = () => {
+        setUserId('43')
+        fetch(base_url+`/users/userInfo/${getUserId()}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then((response) => {
+            if(response.ok) {
+                response.json().then((responseJson) => {
+                    console.log("User Info Fetched")
+                    console.log(responseJson)
+                    setOrgLevelId(responseJson.orgLevelId)
+                    setRainbowHome(responseJson.rainbowHome)
+                })
+            }
+        })
+        .catch((error)=> {
+            console.log("Userinfo error: " + error);
+        })
     }
 
     _userLogin = () => {
@@ -129,9 +157,12 @@ export default class Login extends Component {
                         console.log(responseJson.orgId);
                         console.log(getOrgId());
                         this.updateOrgId(responseJson.orgId);
+                        this.updateUserId(responseJson.userId)
+                        this.updateHomeCode(responseJson.homeCode);
                         this.updateHomeCode(responseJson.homeCode);
                         console.log(getHomeCode());
                         console.log("=========");
+                        this._getUserInfo()
                         this.props.onLoginPress();
                     }
                     else {

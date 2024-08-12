@@ -20,11 +20,11 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const AddDonorSchema2 = yup.object({
-    DonationDate: yup.string().required(),
-    ProgramType: yup.string().required(),
-    PaymentMode: yup.string().required(),
-    Amount: yup.string().required(),
-    Quantity: yup.string().required()
+    DonationDate: yup.string(),//.required(),
+    ProgramType: yup.string(),//.required(),
+    PaymentMode: yup.string(),//.required(),
+    Amount: yup.string(),//.required(),
+    Quantity: yup.string()//.required()
 });
 
 let imagePath = null;
@@ -32,7 +32,10 @@ let imagePath = null;
 const defaultImg = require('../assets/person.png');
 
 export default class AddDonor extends React.Component{
-    
+    constructor(props) {
+        super(props);
+    }
+
     state = {
         loaderIndex: 0,
         showLoader: false,
@@ -48,8 +51,9 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
+        contributionPage1: ""
     };
-
+    
 
     async addDonorConstants(){
         // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
@@ -106,6 +110,7 @@ export default class AddDonor extends React.Component{
     };
 
     _submitAddDonorForm(values) {
+        console.log("Props", this.props.navigation.state.params.donorDetails)
         console.log("submitdonor called");
         let request_body = JSON.stringify({
             "DonationDate": values.DonationDate,
@@ -115,6 +120,7 @@ export default class AddDonor extends React.Component{
             "Quantity": values.Quantity
         });
         console.log(request_body);
+        this.setState({contributionPage1: request_body})
         // var imageupload = false;
         // fetch(base_url+"/child", {
         //     method: 'POST',
@@ -258,7 +264,7 @@ export default class AddDonor extends React.Component{
                     let alertMessage = this.state.submitAlertMessage;
                     console.log(result);
                     this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('Enter Donation Details ');
+                    this.props.navigation.navigate('AddDonor3', {donorDetails: this.props.navigation.state.params.donorDetails, contributionPage1: this.state.contributionPage1});
                 }}
                 >
                     {props => (
@@ -275,10 +281,44 @@ export default class AddDonor extends React.Component{
                                         <Image PaymentMode = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
                                 
-                                <View style={globalStyles.PageHeaderView}>
-                                    <Text style={globalStyles.PageHeader}>Enter Donation Details</Text>
-                                </View>
+                                <Text style = {globalStyles.label}>Contribution Towards</Text>
 
+                                {/* City */}
+                                <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
+                                <Picker
+                                    selectedValue = {props.values.ProgramType}
+                                    onValueChange = {value => {
+                                        props.setFieldValue('ProgramType', value);
+                                    }}
+                                    style = {globalStyles.dropDown}
+                                >
+                                    <Picker.Item label='City' color='grey' value = ''/>
+                                    { 
+                                        this.state.programtypes.map((item) => {
+                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
+                                        })
+                                    }
+                                </Picker>
+                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
+                                
+                                {/* Home */}
+                                <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
+                                <Picker
+                                    selectedValue = {props.values.ProgramType}
+                                    onValueChange = {value => {
+                                        props.setFieldValue('ProgramType', value);
+                                    }}
+                                    style = {globalStyles.dropDown}
+                                >
+                                    <Picker.Item label='Home' color='grey' value = ''/>
+                                    { 
+                                        this.state.programtypes.map((item) => {
+                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
+                                        })
+                                    }
+                                </Picker>
+                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
+                                                                
                                 {/* Donation Date */}
                                 <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
                                 <View style={globalStyles.dobView}>

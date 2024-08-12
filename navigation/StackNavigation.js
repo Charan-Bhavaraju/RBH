@@ -13,6 +13,7 @@ import FollowUpNavigation from './FollowUpNavigation';
 import FamilyInfoNavigation from './FamilyInfoNavigation';
 import CommunicationInfoNavigation from './CommunicationInfoNavigation';
 import HealthInfoNavigation from './HealthInfoNavigation';
+import DonorFormNavigation from './DonorFormNavigation';
 
 const screens = {
     ViewChild: {
@@ -44,6 +45,9 @@ const screens = {
     },
     FollowUp: {
         screen: FollowUpNavigation
+    },
+    DonorForm: {
+        screen: DonorFormNavigation
     }
 
 };
