@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, Text, TextInput, View, Picker, ScrollView,
     KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
+import MultiSelect from 'react-native-multiple-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Feather} from '@expo/vector-icons';
 import {Formik} from 'formik';
@@ -51,11 +52,42 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
-        contributionPage1: ""
+        contributionPage1: "",
+        cities: [],
+        homes : [],
+        selectedCities : [],
+        selectedHomes : []
     };
     
+    fetchItemsData() {
+        getDataAsync(base_url + '/stateNetwork').then(res => {
+                let dataItems = res;
+                this.setState({ cities: dataItems});
+                console.log(res);
+              })
+        
+        getDataAsync(base_url + '/homes?stateNetworkNos=2').then(res => {
+            let dataItems = res;
+            this.setState({ homes: dataItems});
+            console.log(res);
+
+        })
+
+        console.log(this.state.cities, this.state.homes)
+    };
+
+
+    onSelectedCitiesChange = selectedCities => {
+        this.setState({ selectedCities :selectedCities });
+      };
+
+    onSelectedHomesChange = selectedHomes => {
+        this.setState({ selectedHomes :selectedHomes });
+      };
 
     async addDonorConstants(){
+
+
         // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
         let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
         this.setState({programtypes: programtypesdata})
@@ -88,6 +120,7 @@ export default class AddDonor extends React.Component{
         let orgId = getOrgId();
         this.setState({orgid: orgId});
         this.addDonorConstants();
+        this.fetchItemsData();
     }
 
     _pickDd = (event,date,handleChange) => {
@@ -120,6 +153,7 @@ export default class AddDonor extends React.Component{
             "Quantity": values.Quantity
         });
         console.log(request_body);
+        console.log(this.state.selectedCities, this.state.selectedHomes)
         this.setState({contributionPage1: request_body})
         // var imageupload = false;
         // fetch(base_url+"/child", {
@@ -242,7 +276,7 @@ export default class AddDonor extends React.Component{
     }
 
     render() {
- 
+        const { selectedCities, selectedHomes } = this.state;
         return (
             <View style = {globalStyles.container}>
                 
@@ -285,38 +319,52 @@ export default class AddDonor extends React.Component{
 
                                 {/* City */}
                                 <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.ProgramType}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('ProgramType', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='City' color='grey' value = ''/>
-                                    { 
-                                        this.state.programtypes.map((item) => {
-                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
+                                <MultiSelect
+                                          hideTags
+                                          items={this.state.cities}
+                                          uniqueKey="stateNetworkCode"
+                                          ref={(component) => { this.multiSelect = component }}
+                                          onSelectedItemsChange={this.onSelectedCitiesChange}
+                                          selectedItems={selectedCities}
+                                          selectText="Pick Items"
+                                          searchInputPlaceholderText="Search City"
+                                        //   onChangeInput={ (text)=> console.log(text)}
+                                        //   tagRemoveIconColor="#CCC"
+                                        //   tagBorderColor="#CCC"
+                                        //   tagTextColor="#CCC"
+                                        //   selectedItemTextColor="#CCC"
+                                        //   selectedItemIconColor="#CCC"
+                                        //   itemTextColor="#000"
+                                          displayKey="stateNetworkName" 
+                                        //   searchInputStyle={{ color: '#CCC' }}
+                                        //   submitButtonColor="#CCC"
+                                          submitButtonText="Select"
+                                        />
+                                <Text style = {globalStyles.errormsg}>{props.touched.City && props.errors.City}</Text>
                                 
                                 {/* Home */}
                                 <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.ProgramType}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('ProgramType', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Home' color='grey' value = ''/>
-                                    { 
-                                        this.state.programtypes.map((item) => {
-                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
-                                        })
-                                    }
-                                </Picker>
+                                <MultiSelect
+                                          hideTags
+                                          items={this.state.homes}
+                                          uniqueKey="rhCode"
+                                          ref={(component) => { this.multiSelect = component }}
+                                          onSelectedItemsChange={this.onSelectedHomesChange}
+                                          selectedItems={selectedHomes}
+                                          selectText="Pick Items"
+                                          searchInputPlaceholderText="Search Home"
+                                        //   onChangeInput={ (text)=> console.log(text)}
+                                        //   tagRemoveIconColor="#CCC"
+                                        //   tagBorderColor="#CCC"
+                                        //   tagTextColor="#CCC"
+                                        //   selectedItemTextColor="#CCC"
+                                        //   selectedItemIconColor="#CCC"
+                                        //   itemTextColor="#000"
+                                          displayKey="rhName"
+                                        //   searchInputStyle={{ color: '#CCC' }}
+                                        //   submitButtonColor="#CCC"
+                                          submitButtonText="Select"
+                                        />
                                 <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
                                                                 
                                 {/* Donation Date */}

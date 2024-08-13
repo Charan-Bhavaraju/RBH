@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { Component } from 'react';
+import MultiSelect from 'react-native-multiple-select';
+
 import {Button, Text, TextInput, View, Picker, ScrollView,
     KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -19,6 +21,7 @@ import {buildTestImageName, buildProdImageName} from '../constants/ChildConstant
 import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
+
 const AddDonorSchema = yup.object({
     DonorID: yup.string(),
     DonorName: yup.string(),//.required(),
@@ -30,11 +33,12 @@ const AddDonorSchema = yup.object({
 });
 
 let imagePath = null;
-
 const defaultImg = require('../assets/person.png');
 
+
+
 export default class AddDonor extends React.Component{
-    
+
     state = {
         loaderIndex: 0,
         showLoader: false,
@@ -48,7 +52,8 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
-        donorDetails: ""
+        donorDetails: "",
+        openSourceDropDown: false,
     };
 
 
@@ -58,9 +63,12 @@ export default class AddDonor extends React.Component{
         this.setState({donortypes: donortypesdata})
 
         // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
-        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-        this.setState({sources: sourcesdata})
+       let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
+
+       this.setState({sources: sourcesdata})
     }
+
+
 
     loadStats(){
         getDataAsync(base_url + '/dashboard/' + getOrgId())
@@ -86,6 +94,19 @@ export default class AddDonor extends React.Component{
         this.setState({orgid: orgId});
         this.addDonorConstants();
     }
+
+    openDropDown = () => {
+        this.setState({
+             openSourceDropDown: !this.state.openSourceDropDown
+        })
+    }
+    setSources = () => {
+            this.setState({
+                 sources: this.items
+            })
+
+            console.log('TESTTSTST--->',this.state.openSourceDropDown)
+        }
 
     async _submitAddDonorForm(values) {
         console.log("submitdonor called");
@@ -221,7 +242,7 @@ export default class AddDonor extends React.Component{
     }
 
     render() {
- 
+
         return (
             <View style = {globalStyles.container}>
                 
