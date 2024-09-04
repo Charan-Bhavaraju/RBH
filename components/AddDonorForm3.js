@@ -58,16 +58,51 @@ export default class AddDonor extends React.Component{
 
     async addDonorConstants(){
         // getDataAsync(base_url + '/inkinditems').then(data => { this.setState({religions: data})});
-        let inkinditemsdata = [{'InkindItemId' : 1, 'InkindItem': 'Food'},{'InkindItemId' : 2, 'InkindItem': 'Clothes'}]
-        this.setState({inkinditems: inkinditemsdata})
+//        let inkinditemsdata = [{'InkindItemId' : 1, 'InkindItem': 'Food'},{'InkindItemId' : 2, 'InkindItem': 'Clothes'}]
+//        this.setState({inkinditems: inkinditemsdata})
+        getDataAsync(base_url + '/inkind')
+                        .then(data => {
+                            let donationInkindData = []
+                            for(let i = 0; i < data.length; i++){
+                                donationInkindData.push({
+                                          'InkindItemId': data[i].id,
+                                          'InkindItem': data[i].inkindName,
+                                        });
+                            }
+                             this.setState({inkinditems: donationInkindData})
+                         })
 
         // getDataAsync(base_url + '/donationreasons').then(data => { this.setState({communities: data})});
-        let donationreasonsdata =[{'DonationReasonId' : 1, 'DonationReason': 'Self Birthday'},{'DonationReasonId' : 2, 'DonationReason': 'Wedding Anniversary'},{'DonationReasonId' : 3, 'DonationReason': 'Festival'},{'DonationReasonId' : 4, 'DonationReason': 'Just wanted to donate'}]
-        this.setState({donationreasons: donationreasonsdata})
+//        let donationreasonsdata =[{'DonationReasonId' : 1, 'DonationReason': 'Self Birthday'},{'DonationReasonId' : 2, 'DonationReason': 'Wedding Anniversary'},{'DonationReasonId' : 3, 'DonationReason': 'Festival'},{'DonationReasonId' : 4, 'DonationReason': 'Just wanted to donate'}]
+//        this.setState({donationreasons: donationreasonsdata})
+
+        getDataAsync(base_url + '/donationReason')
+                .then(data => {
+                    let donationReasonData = []
+                    for(let i = 0; i < data.length; i++){
+                        donationReasonData.push({
+                                  'DonationReasonId': data[i].donationReasonId,
+                                  'DonationReason': data[i].donationReasonName,
+                                });
+                    }
+                     this.setState({donationreasons: donationReasonData})
+                 })
 
         // getDataAsync(base_url + '/purposeofdonation').then(data => { this.setState({communities: data})});
-        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
-        this.setState({purposeofdonation: purposeofdonationdata})
+//        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
+//        this.setState({purposeofdonation: purposeofdonationdata})
+
+        getDataAsync(base_url + '/donationReason')
+                        .then(data => {
+                            let donationReasonData = []
+                            for(let i = 0; i < data.length; i++){
+                                donationReasonData.push({
+                                          'PurposeOfDonationId': data[i].donationReasonId,
+                                          'PurposeOfDonation': data[i].donationReasonName,
+                                        });
+                            }
+                             this.setState({purposeofdonation: donationReasonData})
+                         })
     }
 
     loadStats(){

@@ -89,12 +89,35 @@ export default class AddDonor extends React.Component{
 
 
         // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
-        let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
-        this.setState({programtypes: programtypesdata})
+//        let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
+//        this.setState({programtypes: programtypesdata})
+        getDataAsync(base_url + '/programType')
+                            .then(data => {
+                                let programTypeData = []
+                                for(let i = 0; i < data.length; i++){
+                                    programTypeData.push({
+                                              'ProgramTypeId': data[i].id,
+                                              'ProgramType': data[i].programTypeName,
+                                            });
+                                }
+                                 this.setState({programtypes: programTypeData})
+                             })
 
         // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
-        let paymentmodesdata =[{'PaymentModeId' : 1, 'PaymentMode': 'Inkind'},{'PaymentModeId' : 2, 'PaymentMode': 'Cash'},{'PaymentModeId' : 3, 'PaymentMode': 'Cheque'},{'PaymentModeId' : 4, 'PaymentMode': 'UPI'},{'PaymentModeId' : 5, 'PaymentMode': 'Online'}]
-        this.setState({paymentmodes: paymentmodesdata})
+//        let paymentmodesdata =[{'PaymentModeId' : 1, 'PaymentMode': 'Inkind'},{'PaymentModeId' : 2, 'PaymentMode': 'Cash'},{'PaymentModeId' : 3, 'PaymentMode': 'Cheque'},{'PaymentModeId' : 4, 'PaymentMode': 'UPI'},{'PaymentModeId' : 5, 'PaymentMode': 'Online'}]
+//        this.setState({paymentmodes: paymentmodesdata})
+        getDataAsync(base_url + '/paymentMode')
+                .then(data => {
+                    let paymentModeData = []
+                    for(let i = 0; i < data.length; i++){
+                        paymentModeData.push({
+                                  'PaymentModeId': data[i].sponsorshipTypeID,
+                                  'PaymentMode': data[i].sponsorshipType,
+                                });
+                    }
+                     this.setState({paymentmodes: paymentModeData})
+                 })
+
     }
 
     loadStats(){

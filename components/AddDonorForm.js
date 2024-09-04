@@ -58,14 +58,39 @@ export default class AddDonor extends React.Component{
 
 
     async addDonorConstants(){
-        // getDataAsync(base_url + '/donortypes').then(data => { this.setState({religions: data})});
-        let donortypesdata = [{'DonorTypeId' : 1, 'DonorType': 'Government'},{'DonorTypeId' : 2, 'DonorType': 'Civil Society'}]
-        this.setState({donortypes: donortypesdata})
+//        getDataAsync(base_url + '/donorType').then(data => {
+//        console.log("keyeyyeey", data)
+//        this.setState({donortypes: data})});
+//        let donortypesdata = [{'DonorTypeId' : 1, 'DonorType': 'Government'},{'DonorTypeId' : 2, 'DonorType': 'Civil Society'}]
+//           this.setState({donortypes: donortypesdata})
+        getDataAsync(base_url + '/donorType')
+                    .then(data => {
+                        let donorTypesData = []
+                        for(let i = 0; i < data.length; i++){
+                            donorTypesData.push({
+                                      'DonorTypeId': data[i].id,
+                                      'DonorType': data[i].donorTypeName,
+                                    });
+                        }
+                         this.setState({donortypes: donorTypesData})
+                     })
+
 
         // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
-       let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
+        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
+        this.setState({sources: sourcesdata})
+//        getDataAsync(base_url + '/donorType')
+//                            .then(data => {
+//                                let sourceData = []
+//                                for(let i = 0; i < data.length; i++){
+//                                    sourceData.push({
+//                                              'SourceId': data[i].id,
+//                                              'Source': data[i].donorTypeName,
+//                                            });
+//                                }
+//                                this.setState({sources: sourceData})
+//                             })
 
-       this.setState({sources: sourcesdata})
     }
 
 
