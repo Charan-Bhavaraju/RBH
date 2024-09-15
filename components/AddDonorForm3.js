@@ -11,13 +11,13 @@ import moment from 'moment';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import {base_url,getDataAsync} from '../constants/Base';
 import { ActivityIndicator } from 'react-native';
-import { getOrgId, getHomeCode } from '../constants/LoginConstant';
 import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
 import * as Permissions from 'expo-permissions';
 import {guidGenerator} from '../constants/Base';
 import {buildTestImageName, buildProdImageName} from '../constants/ChildConstants';
 import base64 from 'react-native-base64';
-import {getPassword, getUserName} from '../constants/LoginConstant';
+import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome, getRainbowHome } from '../constants/LoginConstant'
+
 
 const AddDonorSchema3 = yup.object({
     InkindItem: yup.string(),//.required(),
@@ -58,16 +58,51 @@ export default class AddDonor extends React.Component{
 
     async addDonorConstants(){
         // getDataAsync(base_url + '/inkinditems').then(data => { this.setState({religions: data})});
-        let inkinditemsdata = [{'InkindItemId' : 1, 'InkindItem': 'Food'},{'InkindItemId' : 2, 'InkindItem': 'Clothes'}]
-        this.setState({inkinditems: inkinditemsdata})
+//        let inkinditemsdata = [{'InkindItemId' : 1, 'InkindItem': 'Food'},{'InkindItemId' : 2, 'InkindItem': 'Clothes'}]
+//        this.setState({inkinditems: inkinditemsdata})
+        getDataAsync(base_url + '/inkind')
+                        .then(data => {
+                            let donationInkindData = []
+                            for(let i = 0; i < data.length; i++){
+                                donationInkindData.push({
+                                          'InkindItemId': data[i].id,
+                                          'InkindItem': data[i].inkindName,
+                                        });
+                            }
+                             this.setState({inkinditems: donationInkindData})
+                         })
 
         // getDataAsync(base_url + '/donationreasons').then(data => { this.setState({communities: data})});
-        let donationreasonsdata =[{'DonationReasonId' : 1, 'DonationReason': 'Self Birthday'},{'DonationReasonId' : 2, 'DonationReason': 'Wedding Anniversary'},{'DonationReasonId' : 3, 'DonationReason': 'Festival'},{'DonationReasonId' : 4, 'DonationReason': 'Just wanted to donate'}]
-        this.setState({donationreasons: donationreasonsdata})
+//        let donationreasonsdata =[{'DonationReasonId' : 1, 'DonationReason': 'Self Birthday'},{'DonationReasonId' : 2, 'DonationReason': 'Wedding Anniversary'},{'DonationReasonId' : 3, 'DonationReason': 'Festival'},{'DonationReasonId' : 4, 'DonationReason': 'Just wanted to donate'}]
+//        this.setState({donationreasons: donationreasonsdata})
+
+        getDataAsync(base_url + '/donationReason')
+                .then(data => {
+                    let donationReasonData = []
+                    for(let i = 0; i < data.length; i++){
+                        donationReasonData.push({
+                                  'DonationReasonId': data[i].donationReasonId,
+                                  'DonationReason': data[i].donationReasonName,
+                                });
+                    }
+                     this.setState({donationreasons: donationReasonData})
+                 })
 
         // getDataAsync(base_url + '/purposeofdonation').then(data => { this.setState({communities: data})});
-        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
-        this.setState({purposeofdonation: purposeofdonationdata})
+//        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
+//        this.setState({purposeofdonation: purposeofdonationdata})
+
+        getDataAsync(base_url + '/donationReason')
+                        .then(data => {
+                            let donationReasonData = []
+                            for(let i = 0; i < data.length; i++){
+                                donationReasonData.push({
+                                          'PurposeOfDonationId': data[i].donationReasonId,
+                                          'PurposeOfDonation': data[i].donationReasonName,
+                                        });
+                            }
+                             this.setState({purposeofdonation: donationReasonData})
+                         })
     }
 
     loadStats(){
@@ -127,140 +162,124 @@ export default class AddDonor extends React.Component{
 
     _submitAddDonorForm(values) {
         console.log("submitdonor called");
-        console.log("Props", this.props.navigation.state.params.donorDetails, this.props.navigation.state.params.contributionPage1)
-
+        // console.log("Props", this.props.navigation.state.params.donorDetails, this.props.navigation.state.params.contributionPage1)
+        const isoTimestamp = new Date().toISOString();
+        const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
+        const contributionPage1 = JSON.parse(this.props.navigation.state.params.contributionPage1)
         // call add donor
-        // get user info
-
-        let request_body = JSON.stringify({
-            "InkindItem": values.InkindItem,
-            "BudgetedFromDonation": values.BudgetedFromDonation,
-            "UnBudgetedFromDonation": values.UnBudgetedFromDonation,
-            "DonationReason": values.DonationReason,
-            "DonationAdditionalNotes": values.DonationAdditionalNotes,
-            "SpecialDayDate": values.SpecialDayDate,
-            "PurposeOfDonation": values.PurposeOfDonation,
-            "DonorPreference": values.DonorPreference
+        let donor_request_body = JSON.stringify({
+            "address": "",
+            "birthday": "",
+            "createdBy": getUserId(),
+            "createdOn": isoTimestamp,
+            "donorTypeId": donorDetails.DonorType,
+            "emailId": donorDetails.Email,
+            "mobileNo": donorDetails.PhoneNumber,
+            "modifiedBy": getUserId(),
+            "modifiedOn": isoTimestamp,
+            "rhNo": getRainbowHome().stateNetworkNo,
+            "panNumber": donorDetails.PAN,
+            "sponsorName": donorDetails.DonorName
         });
-        console.log(request_body);
-        // var imageupload = false;
-        // fetch(base_url+"/child", {
-        //     method: 'POST',
-        //     headers: {
-        //         Accept: 'application/json',
-        //         'Content-Type': 'application/json',
-        //         'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //     },
-        //     body: request_body,
-        // })
-        // .then((response) =>{
-        //     if(response.ok) {
-        //         console.log("printing status");
-        //         console.log(response.status);
-        //         console.log("printing status");
-        //         response.json().then((responseJson) => {
-        //             let DonorId = responseJson.childNo;
-        //             let childName = responseJson.DonorName;
-        //             this.loadStats();
-        //             let imageUri = '';
-        //             if(imagePath === null) {
-        //                 imageUri= ''
-        //             }
-        //             else {
-        //                 imageUri = imagePath;
-        //             }
-        //             console.log("Image URI");
-        //             console.log(imageUri);
-        //             console.log("Image URI");
-        //             let imageName = buildTestImageName(responseJson.childNo, responseJson.DonorName);
-        //             let photoUrl = base_url+"/upload-image/"+responseJson.childNo + imageName;
-        //             console.log(photoUrl);
-        //             var formdata = new FormData();
-        //             formdata.append('file', { uri: imageUri, name: `${imageName.split('/')[2]}.jpg`, type: 'image/jpg' });
-        //             fetch(photoUrl, {
-        //                 method: 'PUT',
-        //                 headers: {
-        //                     'content-type': 'multipart/form-data;boundary=----WebKitFormBoundaryyEmKNDsBKjB7QEqu',
-        //                     'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //                 },
-        //                 body: formdata,
-        //             })
-        //             .then((response) => {
-        //                 console.log("*****");
-        //                 console.log(response.status);
-        //                 console.log("******");
-        //                 if(response.status == 200) {
-        //                             this.state.photoUploadMessage = ". Succesfully uploaded image";
-        //                             imageupload = true;
-        //                 }
-        //                 else {
-        //                             this.state.photoUploadMessage = ". Error uploading image";
-        //                 }
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                             'Added Child',
-        //                             this.state.submitAlertMessage,
-        //                             [
-        //                                 { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                             ],
-        //                             { cancelable: false },
-        //                 ); 
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //             .catch((error)=> {
-        //                 this.state.photoUploadMessage = ".Error uploading image";
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                     'Added Child',
-        //                     this.state.submitAlertMessage,
-        //                     [
-        //                         { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                     ],
-        //                     { cancelable: false },
-        //                 );
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //         })
-        //     }
-        //     else {
-        //         if(response.status == 500) {
-        //             response.json().then((responseJson) => {
-        //                 console.log(responseJson)
-        //                 if(responseJson.message == "Duplicate profile") {
-        //                     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //                     Alert.alert(
-        //                         'Failed To Add Child',
-        //                         responseJson.message+". Child already present.",
-        //                         [
-        //                             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //                         ],
-        //                         { cancelable: false },
-        //                     );
-        //                     this.setState({isVisible: true, errorDisplay: true});
-        //                     this.setState({showLoader: false,loaderIndex:0});
-        //                 }
-        //             })
-        //         }
-        //         else {
-        //             throw Error(response.status);
-        //         }
-        //     }
-        // })
-        // .catch((error) => {
-        //     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //     Alert.alert(
-        //         'Failed To Add Child',
-        //         this.state.submitAlertMessage,
-        //         [
-        //             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //         ],
-        //         { cancelable: false },
-        //     );
-        //     this.setState({isVisible: true, errorDisplay: true});
-        //     this.setState({showLoader: false,loaderIndex:0});
+        console.log(donor_request_body)
+
+        fetch(base_url+"/sponsors/createSponsor", {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
+            },
+            body: donor_request_body,
+        })
+        .then((response) =>{
+            if(response.ok) {
+                console.log(response.json)
+            }
+            else {
+                console.log("failed")
+            }
+        })
+        .catch((error) => {
+            this.setState({submitAlertMessage: 'Unable to add donor. Plesae contact the Admin.'});
+            Alert.alert(
+                'Failed To Add donor',
+                this.state.submitAlertMessage,
+                [
+                    { text: 'OK', onPress: () => console.log("Failed to add donor") },
+                ],
+                { cancelable: false },
+            );
+            this.setState({isVisible: true, errorDisplay: true});
+            this.setState({showLoader: false,loaderIndex:0});
+        });
+
+        // add to contribution table
+        let contribution_request_body = JSON.stringify({
+            "amount": contributionPage1.Amount,
+            "contributionDate": contributionPage1.DonationDate,
+            "createdBy": getUserId(),
+            "createdOn": isoTimestamp,
+            "BudgetedFromDonation": values.BudgetedFromDonation, //
+            "UnBudgetedFromDonation": values.UnBudgetedFromDonation, //
+            "DonationAdditionalNotes": values.DonationAdditionalNotes, // donation occasion?
+            "SpecialDayDate": values.SpecialDayDate, //
+            "donationReasonId": values.DonationReason,
+            "donorPreferenceId": values.DonorPreference,
+            "inkindId": values.InkindItem,
+            "modifiedBy": getUserId(),
+            "modifiedOn": isoTimestamp,
+            "programTypeId": contributionPage1.ProgramType,
+            "paymentModeId": contributionPage1.PaymentMode,
+            "quantity": contributionPage1.Quantity,
+            "rhNo": getRainbowHome().stateNetworkNo,
+            "sponsorId": "", //
+            "sponsorName": donorDetails.DonorName,
+            "sponsorshipTypeID": "" //
+        });
+        // let request_body = JSON.stringify({
+        //     "InkindItem": values.InkindItem,
+        //     "BudgetedFromDonation": values.BudgetedFromDonation,
+        //     "UnBudgetedFromDonation": values.UnBudgetedFromDonation,
+        //     "DonationReason": values.DonationReason,
+        //     "DonationAdditionalNotes": values.DonationAdditionalNotes,
+        //     "SpecialDayDate": values.SpecialDayDate,
+        //     "PurposeOfDonation": values.PurposeOfDonation,
+        //     "DonorPreference": values.DonorPreference
         // });
+        console.log(contribution_request_body);
+
+
+        fetch(base_url+"/createContribution", {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
+            },
+            body: contribution_request_body,
+        })
+        .then((response) =>{
+            if(response.ok) {
+                console.log(response.json)
+            }
+            else {
+                console.log("failed")
+            }
+        })
+        .catch((error) => {
+            this.setState({submitAlertMessage: 'Unable to add contribution. Plesae contact the Admin.'});
+            Alert.alert(
+                'Failed To Add contribution',
+                this.state.submitAlertMessage,
+                [
+                    { text: 'OK', onPress: () => console.log("Failed to add contribution") },
+                ],
+                { cancelable: false },
+            );
+            this.setState({isVisible: true, errorDisplay: true});
+            this.setState({showLoader: false,loaderIndex:0});
+        });
     }
 
     render() {
