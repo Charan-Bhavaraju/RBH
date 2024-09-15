@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import {base_url} from '../constants/Base';
 import {globalStyles} from '../styles/global';
-import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome } from '../constants/LoginConstant'
+import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome, getRainbowHome } from '../constants/LoginConstant'
 import base64 from 'react-native-base64';
 
 export default class Login extends Component {
@@ -96,7 +96,7 @@ export default class Login extends Component {
     }
 
     _getUserInfo = () => {
-        setUserId('43')
+        console.log(`Getting user info : ${getUserId()}`)
         fetch(base_url+`/users/userInfo/${getUserId()}`, {
             method: 'GET',
             headers: {

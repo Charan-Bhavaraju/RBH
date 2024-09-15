@@ -12,7 +12,7 @@ import moment from 'moment';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import {base_url,getDataAsync} from '../constants/Base';
 import { ActivityIndicator } from 'react-native';
-import { getOrgId, getHomeCode } from '../constants/LoginConstant';
+import { getOrgId, getHomeCode, getOrgLevelId, getRainbowHome } from '../constants/LoginConstant';
 import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
 import * as Permissions from 'expo-permissions';
 import {guidGenerator} from '../constants/Base';
@@ -60,20 +60,32 @@ export default class AddDonor extends React.Component{
     };
     
     fetchItemsData() {
-        getDataAsync(base_url + '/stateNetwork').then(res => {
+        let orgLevel = getOrgLevelId();
+        console.log(orgLevel, getRainbowHome().stateNetworkNo)
+        if(orgLevel === 5){
+            console.log("User Org Level is 5")
+            getDataAsync(base_url + `/stateNetwork/${getRainbowHome().stateNetworkNo}`).then(res => {
+                let dataItems = res;
+                this.setState({ cities: [dataItems]});
+                console.log(res);
+            })
+            this.setState({ homes: [getRainbowHome()]});
+        }
+        else {        
+            console.log("User Org Level is <5 ")
+
+            getDataAsync(base_url + '/stateNetwork').then(res => {
                 let dataItems = res;
                 this.setState({ cities: dataItems});
-                console.log(res);
               })
         
-        getDataAsync(base_url + '/homes?stateNetworkNos=2').then(res => {
-            let dataItems = res;
-            this.setState({ homes: dataItems});
-            console.log(res);
+            getDataAsync(base_url + '/homes?stateNetworkNos=2').then(res => {
+                let dataItems = res;
+                this.setState({ homes: dataItems});
+            })
+        }
 
-        })
-
-        console.log(this.state.cities, this.state.homes)
+        // console.log(this.state.cities, this.state.homes)
     };
 
 
@@ -86,8 +98,6 @@ export default class AddDonor extends React.Component{
       };
 
     async addDonorConstants(){
-
-
         // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
         let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
         this.setState({programtypes: programtypesdata})
@@ -117,6 +127,7 @@ export default class AddDonor extends React.Component{
     }
 
     componentDidMount() {
+        console.log("Mounting Data")
         let orgId = getOrgId();
         this.setState({orgid: orgId});
         this.addDonorConstants();
