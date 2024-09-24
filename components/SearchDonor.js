@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Button, Text, TextInput, View, Picker, ScrollView,
     KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -20,9 +20,8 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 
-export default class SearchDonor extends React.Component{
+export default class SearchDonor extends React.Component {
 
-    
     state = {
         showLoader: false,
         loaderIndex: 0,
@@ -35,6 +34,27 @@ export default class SearchDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
+        donorsList: []
+    };
+
+    onSelectedDonorChange = selectedDonor => {
+        this.setState({ selectedDonor : selectedDonor });
+    };
+
+    // API call to search sponsors
+    fetchDonors = async (inputDonor) => {
+        // console.warn(inputDonor);
+        const searchUrl = `${base_url}/sponsors/donor?search=${inputDonor}`;
+
+        let result = await fetch(searchUrl);
+
+        result = await result.json()
+        
+        if (result) {
+            let dataItems = result
+            this.setState({ donorsList: dataItems});
+            console.log(result);
+        }
     };
 
     componentDidMount() {
@@ -49,19 +69,6 @@ export default class SearchDonor extends React.Component{
         this.setState({searchType: value});
         console.log(value);
         handleChange(value);
-    }
-
-    componentDidMount() {
-        let orgId = getOrgId();
-        this.setState({orgid: orgId});
-    }
-
-    _searchDonorForm(values) {
-        console.log("searchDonor called");
-        let request_body = JSON.stringify({
-            "donorName": values.DonorName,
-            "searchType": values.SearchType,
-        });
     }
 
     render() {
@@ -103,32 +110,51 @@ export default class SearchDonor extends React.Component{
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style= {globalStyles.topView}>
                                 {this.state.pageOne && <View>
-                                    <View style={globalStyles.backgroundlogoimageview}>
-                                        <Image source = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
+                                    <View style={{position: 'absolute', top: "40%", right: 0, left:0, zIndex: -2,}}>
+                                        <Image source = {require("../assets/RBHlogoicon.png")} style={{resizeMode: 'cover',opacity: 0.2, marginTop: '30%', marginLeft: '29%'}}/>
                                     </View>
                                 
                                 {/* Search */}
-                                <Text>Search Type:{'\n'}</Text>
-                                <RadioForm
-                                        style={{marginLeft: 10}}
-                                        radio_props={radio_props}
-                                        buttonSize={10}
-                                        buttonOuterSize={20}
-                                        buttonColor={'black'}
-                                        buttonInnerColor={'black'}
-                                        selectedButtonColor={'blue'}
-                                        formHorizontal={false}
-                                        onPress={(value) => this._changeSearchType(value,props.handleChange('SearchType'))}
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.SearchType && props.errors.SearchType}</Text>
+                                <View style={{marginTop: '5%', marginLeft: '5%', marginRight: '5%'}}>
+                                    <Text>Search Type:{'\n'}</Text>
+                                    <RadioForm
+                                            style={{marginLeft: 10}}
+                                            radio_props={radio_props}
+                                            buttonSize={10}
+                                            buttonOuterSize={20}
+                                            buttonColor={'black'}
+                                            buttonInnerColor={'black'}
+                                            selectedButtonColor={'blue'}
+                                            formHorizontal={false}
+                                            onPress={(value) => this._changeSearchType(value,props.handleChange('SearchType'))}
+                                    />
+                                    <Text style = {globalStyles.errormsg}>{props.touched.SearchType && props.errors.SearchType}</Text>
+                                    
+                                    <View style={{marginTop: '5%'}}>
+                                        {/* Search Donor */}
+                                        <TextInput
+                                            placeholder='Enter Donor name / Donor id'
+                                            style = {globalStyles.inputText}
+                                            onChangeText = {(searchInput) => {
+                                                this.fetchDonors(searchInput);
+                                                props.handleChange('DonorName')(searchInput);
+                                                }
+                                            }
+                                            // value = {props.values.DonorName}
+                                        />
+                                        {
+                                            this.state.donorsList.length ? 
+                                            this.state.donorsList.map((item) =>
+                                            <View>
+                                                <Text>{item.sponsorName}</Text>    
+                                            </View>)
+                                            :null
+                                        }
+                                    </View>
+                                    
+                                    
+                                </View>
                                 
-                                {/* Search Donor */}
-                                <TextInput
-                                    placeholder='Donor name / Donor id'
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('DonorName')}
-                                    value = {props.values.DonorName}
-                                />
                                 <Text style = {globalStyles.errormsg}>{props.touched.DonorName && props.errors.DonorName}</Text>
 
                         
