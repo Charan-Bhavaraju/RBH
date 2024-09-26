@@ -17,7 +17,6 @@ export default class SearchDonor extends React.Component {
     // API call to search sponsors
     fetchDonors = async (inputDonor) => {
         if (!inputDonor || inputDonor.length < 3) {
-            // Clear donorsList if input is empty or has fewer than 3 characters
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
@@ -48,6 +47,11 @@ export default class SearchDonor extends React.Component {
         this.setState({ selectedDonor: donor, donorsList: [] });  // Clear the list on selection
         setFieldValue('DonorName', donor.sponsorName);  // Set the selected donor's name in the form input
         setFieldValue('SponsorNo', donor.sponsorNo);     // Store sponsorNo as well
+        setFieldValue('Address', donor.address);         // Store address
+        setFieldValue('Birthday', donor.birthday);       // Store birthday
+        setFieldValue('EmailId', donor.emailId);         // Store emailId
+        setFieldValue('MobileNo', donor.mobileNo);       // Store mobileNo
+        setFieldValue('PanNumber', donor.panNumber);     // Store panNumber
     };
 
     componentDidMount() {
@@ -73,7 +77,12 @@ export default class SearchDonor extends React.Component {
                 <Formik
                     initialValues={{
                         DonorName: '',
-                        SponsorNo: '', // Add SponsorNo to initial values
+                        SponsorNo: '',
+                        Address: '',         // Add Address to initial values
+                        Birthday: '',        // Add Birthday to initial values
+                        EmailId: '',        // Add EmailId to initial values
+                        MobileNo: '',       // Add MobileNo to initial values
+                        PanNumber: '',      // Add PanNumber to initial values
                         SearchType: 1,
                     }}
                 >
@@ -126,7 +135,9 @@ export default class SearchDonor extends React.Component {
                                                         style={[styles.donorItem, this.state.selectedDonor === item && styles.selectedDonorItem]}
                                                         onPress={() => this.selectDonor(item, setFieldValue)}  // Clear results after selection
                                                     >
-                                                        <Text style={styles.donorText}>{item.sponsorName} (Sponsor No: {item.sponsorNo})</Text>
+                                                        <Text style={styles.donorText}>
+                                                            {item.sponsorName} (Sponsor No: {item.sponsorNo})
+                                                        </Text>
                                                     </TouchableOpacity>
                                                 ))}
                                             </>
@@ -139,9 +150,17 @@ export default class SearchDonor extends React.Component {
                                     {/* Submit Button */}
                                     <Button
                                         title="DONATE"
-                                        onPress={() => this.props.navigation.navigate('AddDonor', { navigation: this.props.navigation, selectedDonor: this.state.selectedDonor })}
-                                        disabled={!this.state.selectedDonor}
+                                        onPress={() => {
+                                            // Navigate to the AddDonor screen, passing the Formik values and selected donor
+                                            this.props.navigation.navigate('AddDonor', {
+                                                navigation: this.props.navigation,
+                                                selectedDonor: this.state.selectedDonor,
+                                                formikValues: values,  // Pass Formik values
+                                            });
+                                        }}
+                                        disabled={!this.state.selectedDonor} // Disable if no donor selected
                                     />
+
                                 </View>
                             </ScrollView>
                         </KeyboardAvoidingView>
