@@ -16,7 +16,18 @@ export default class SearchDonor extends React.Component {
 
     // API call to search sponsors
     fetchDonors = async (inputDonor) => {
-        if (!inputDonor || inputDonor.length < 3) {
+        // Check if the input is numeric (for donor ID or phone number) or alphabetic (for name)
+        const isNumeric = /^\d+$/.test(inputDonor);
+        const isAlphabetic = /^[A-Za-z\s]+$/.test(inputDonor);
+
+        // If input is alphabetic, only search if length is greater than or equal to 3
+        if (isAlphabetic && inputDonor.length < 3) {
+            this.setState({ donorsList: [], submitButtonDisabled: true });
+            return;
+        }
+
+        // If input is numeric (e.g., phone number or donor ID), search regardless of length
+        if (!inputDonor) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
@@ -113,7 +124,7 @@ export default class SearchDonor extends React.Component {
                                             onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
                                         />
                                         <TextInput
-                                            placeholder="Enter Donor name / Donor id"
+                                            placeholder="Enter Donor name / Donor id / Phone number"
                                             style={styles.inputText}
                                             onChangeText={searchInput => {
                                                 handleChange('DonorName')(searchInput);
@@ -123,7 +134,7 @@ export default class SearchDonor extends React.Component {
                                         />
 
                                         {/* Donor List Display */}
-                                        {this.state.donorsList.length > 0 && values.DonorName.length >= 3 ? (
+                                        {this.state.donorsList.length > 0 ? (
                                             <>
                                                 {/* Display the search query above the results */}
                                                 <Text style={styles.searchResultsText}>
@@ -140,11 +151,19 @@ export default class SearchDonor extends React.Component {
                                                         </Text>
                                                     </TouchableOpacity>
                                                 ))}
+                                                {/* Display "End of search results" after the last donor */}
+                                                <Text style={styles.endOfResultsText}>
+                                                    End of search results for: "{values.DonorName}"
+                                                </Text>
                                             </>
                                         ) : (
-                                            // Display "No donors found" text only if there is no selected donor
-                                            !this.state.selectedDonor && <Text>No donors found</Text>
+                                            // Only display "No donors found" if no results and no donor is selected
+                                            values.DonorName.length > 0 && !this.state.showLoader && !this.state.selectedDonor && (
+                                                <Text>No donors found</Text>
+                                            )
                                         )}
+
+
                                     </View>
 
                                     {/* Submit Button */}
@@ -225,5 +244,12 @@ const styles = StyleSheet.create({
     },
     donorText: {
         fontSize: 16,
+    },
+    endOfResultsText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginTop: 10,
+        color: '#000',
+        textAlign: 'center', // Center the message
     },
 });
