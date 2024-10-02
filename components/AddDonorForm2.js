@@ -21,6 +21,8 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const AddDonorSchema2 = yup.object({
+    City: yup.string(),
+    Home: yup.string(),
     DonationDate: yup.string(),//.required(),
     ProgramType: yup.string(),//.required(),
     PaymentMode: yup.string(),//.required(),
@@ -43,6 +45,8 @@ export default class AddDonor extends React.Component{
         programtypes: [],
         paymentmodes: [],
         donationdate: '',
+        City : getRainbowHome()['city'],
+        Home : getRainbowHome()['rhName'],
         showdd: false,
         isVisible: false,
         sucessDisplay: false,
@@ -56,9 +60,21 @@ export default class AddDonor extends React.Component{
         cities: [],
         homes : [],
         selectedCities : [],
-        selectedHomes : []
+        selectedHomes : [],
+        homesVisible: false,
+        orgLevel : getOrgLevelId(),
+        rainbowHome : getRainbowHome()
     };
     
+    // componentDidUpdate(prevProps, prevState) {
+    //     // Check if 'count' has changed
+    //     if (prevState.selectedCities !== this.state.selectedCities && this.state.selectedCities.length >0){
+    //         this.setState({ homesVisible :true });
+    //     };
+    //     if (this.state.selectedCities.length ===0){
+    //         this.setState({ homesVisible :false });
+    //     };
+    // }
     fetchItemsData() {
         let orgLevel = getOrgLevelId();
         console.log(orgLevel, getRainbowHome().stateNetworkNo)
@@ -67,7 +83,7 @@ export default class AddDonor extends React.Component{
             getDataAsync(base_url + `/stateNetwork/${getRainbowHome().stateNetworkNo}`).then(res => {
                 let dataItems = res;
                 this.setState({ cities: [dataItems]});
-                console.log(res);
+                console.log(cities);
             })
             this.setState({ homes: [getRainbowHome()]});
         }
@@ -76,13 +92,10 @@ export default class AddDonor extends React.Component{
 
             getDataAsync(base_url + '/stateNetwork').then(res => {
                 let dataItems = res;
+                console.log(res)
                 this.setState({ cities: dataItems});
               })
-        
-            getDataAsync(base_url + '/homes?stateNetworkNos=2').then(res => {
-                let dataItems = res;
-                this.setState({ homes: dataItems});
-            })
+            
         }
 
         // console.log(this.state.cities, this.state.homes)
@@ -91,6 +104,18 @@ export default class AddDonor extends React.Component{
 
     onSelectedCitiesChange = selectedCities => {
         this.setState({ selectedCities :selectedCities });
+        this.setState({ homesVisible :true });
+        const queryParams = selectedCities
+        .map(city => `stateNetworkNos=${city}`) // Extract stateNetworkNo
+        .join('&'); // Join them with '&'
+
+        getDataAsync(base_url + '/homes?' +queryParams).then(res => {
+            let dataItems = res;
+            this.setState({ homes: dataItems});
+        }).catch(error => {
+            console.error('Error fetching data:', error);
+        });
+
       };
 
     onSelectedHomesChange = selectedHomes => {
@@ -179,7 +204,11 @@ export default class AddDonor extends React.Component{
     _submitAddDonorForm(values) {
         console.log("Props", this.props.navigation.state.params.donorDetails)
         console.log("submitdonor called");
+        const city_value = this.state.orgLevel===5 ? [this.state.rainbowHome["rhCode"]] : this.state.selectedCities
+        const home_value = this.state.orgLevel===5 ? [this.state.rainbowHome["rhNo"]] : this.state.selectedHomes
         let request_body = JSON.stringify({
+            "City": city_value,
+            "Home": home_value,
             "DonationDate": values.DonationDate,
             "ProgramType": values.ProgramType,
             "PaymentMode": values.PaymentMode,
@@ -309,6 +338,8 @@ export default class AddDonor extends React.Component{
         // });
     }
 
+    
+
     render() {
         const { selectedCities, selectedHomes } = this.state;
         return (
@@ -317,6 +348,8 @@ export default class AddDonor extends React.Component{
                 <Formik
                 initialValues = {
                     {
+                        City : this.state.City,
+                        Home : this.state.Home,
                         DonationDate: this.state.donationdate,
                         ProgramType: '',
                         PaymentMode: '',
@@ -353,10 +386,19 @@ export default class AddDonor extends React.Component{
 
                                 {/* City */}
                                 <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
-                                <MultiSelect
+                                { this.state.orgLevel ===5 ?
+                                    <TextInput
+                                    style = {globalStyles.inputText}
+                                    value={this.state.City}
+                                    editable={false}
+                                    selectTextOnFocus={false}
+                                    onChangeText = {props.handleChange('City')}
+                                    />                                
+                                    :
+                                    <MultiSelect
                                           hideTags
                                           items={this.state.cities}
-                                          uniqueKey="stateNetworkCode"
+                                          uniqueKey="stateNetworkNo"
                                           ref={(component) => { this.multiSelect = component }}
                                           onSelectedItemsChange={this.onSelectedCitiesChange}
                                           selectedItems={selectedCities}
@@ -373,12 +415,21 @@ export default class AddDonor extends React.Component{
                                         //   searchInputStyle={{ color: '#CCC' }}
                                         //   submitButtonColor="#CCC"
                                           submitButtonText="Select"
-                                        />
+                                    />
+                                    }
                                 <Text style = {globalStyles.errormsg}>{props.touched.City && props.errors.City}</Text>
-                                
                                 {/* Home */}
                                 <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
-                                <MultiSelect
+                                { this.state.orgLevel ===5 ?
+                                    <TextInput
+                                    style = {globalStyles.inputText}
+                                    value={this.state.Home}
+                                    editable={false}  
+                                    selectTextOnFocus={false}
+                                    onChangeText = {props.handleChange('Home')}
+                                    />                                
+                                    :
+                                 this.state.homesVisible ? <MultiSelect
                                           hideTags
                                           items={this.state.homes}
                                           uniqueKey="rhCode"
@@ -398,7 +449,9 @@ export default class AddDonor extends React.Component{
                                         //   searchInputStyle={{ color: '#CCC' }}
                                         //   submitButtonColor="#CCC"
                                           submitButtonText="Select"
-                                        />
+                                        /> : <Text style = {globalStyles.label}>Select City</Text>
+
+                                }
                                 <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
                                                                 
                                 {/* Donation Date */}

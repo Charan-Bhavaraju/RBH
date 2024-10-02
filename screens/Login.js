@@ -159,7 +159,6 @@ export default class Login extends Component {
                         this.updateOrgId(responseJson.orgId);
                         this.updateUserId(responseJson.userId)
                         this.updateHomeCode(responseJson.homeCode);
-                        this.updateHomeCode(responseJson.homeCode);
                         console.log(getHomeCode());
                         console.log("=========");
                         this._getUserInfo()

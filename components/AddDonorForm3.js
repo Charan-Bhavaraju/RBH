@@ -179,7 +179,8 @@ export default class AddDonor extends React.Component{
             "modifiedOn": isoTimestamp,
             "rhNo": getRainbowHome().stateNetworkNo,
             "panNumber": donorDetails.PAN,
-            "sponsorName": donorDetails.DonorName
+            "sponsorName": donorDetails.DonorName,
+            "source" : donorDetails.Source
         });
         console.log(donor_request_body)
 
