@@ -21,7 +21,7 @@ const AddDonorSchema = yup.object({
     PAN: yup.string()//.required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
 });
 
-export default class AddDonor extends React.Component{
+export default class LeadDonor1 extends React.Component{
     constructor(props){
         super(props)
     this.state ={
@@ -89,34 +89,6 @@ export default class AddDonor extends React.Component{
 
     componentDidMount() {
         console.log('mounting component');
-        const origin = this.props.screenProps.state.params.origin;
-        if (origin) {
-          console.log('Screen coming from:', origin);
-        } else {
-          console.log('No origin param passed');
-        }
-        if(origin === "AddDonor"){
-            setSelectedDonor({});
-            this.setState({
-                fromSearchFlag: false, 
-                loaderIndex: 0,
-                showLoader: false,
-                donortypes: [],
-                sources: [],
-                isVisible: false,
-                sucessDisplay: false,
-                errorDisplay: false,
-                pageOne: true,
-                pageTwo: true,
-                pageThree: true,
-                currentPage: 1,
-                submitButtonDisabled: false,
-                donorDetails: "",
-                openSourceDropDown: false,
-                selectedDonorDetails: getSelectedDonor()
-            })
-        }
-        
         this.addDonorConstants();
     }
 
@@ -159,7 +131,7 @@ export default class AddDonor extends React.Component{
                     this._submitAddDonorForm(values);
                     let alertMessage = this.state.submitAlertMessage;
                     this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('IndividualContribution1', {donorDetails: this.state.donorDetails});
+                    this.props.navigation.navigate('LeadDonor2', {donorDetails: this.state.donorDetails});
                 }}
                 >
                     {props => (

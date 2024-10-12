@@ -1,7 +1,7 @@
 import React from 'react'
 import { createAppContainer } from 'react-navigation';
 import { createDrawerNavigator } from 'react-navigation-drawer';
-import { Home, AddChild, ViewChild, AddDonor, Report, LoginScreen, SearchDonor, AddDonor3, AddDonor2} from './Navigation';
+import { Home, AddChild, ViewChild, AddDonor, Report, LoginScreen, SearchDonor, LeadDonor} from './Navigation';
 import {Feather} from '@expo/vector-icons';
 import SideBar from '../components/SideBar';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -34,29 +34,24 @@ const DrawerNavigator = createDrawerNavigator({
         navigationOptions: {
             title: "Donate",
             drawerIcon: ({tintColor}) => <FontAwesome5 name="donate" size={24} color="black" />
-        }
+        },
+        params: { origin: 'AddDonor' }
     },    
-    // AddDonor2: {
-    //     screen: AddDonor2,
-    //     navigationOptions: {
-    //         title: "AddDonor2",
-    //         drawerIcon: ({tintColor}) => <Feather name="users" size={20} color={tintColor}/>
-    //     }
-    // },
-    // AddDonor3: {
-    //     screen: AddDonor3,
-    //     navigationOptions: {
-    //         title: "AddDonor3",
-    //         drawerIcon: ({tintColor}) => <Feather name="users" size={20} color={tintColor}/>
-    //     }
-    // },
     SearchDonor: {
         screen: SearchDonor,
         navigationOptions: {
             title: "Search Donor",
             drawerIcon: ({tintColor}) => <Feather name="search" size={20} color={tintColor}/>
-        }
+        },
+        params: { origin: 'SearchDonor' }
+    },
+    LeadDonor: {
+    screen: LeadDonor,
+    navigationOptions: {
+        title: "Lead Donor",
+        drawerIcon: ({tintColor}) => <FontAwesome5 name="building" size={24} color="black" />
     }
+    },
 }, {
     contentComponent: props => <SideBar {...props} />
 });

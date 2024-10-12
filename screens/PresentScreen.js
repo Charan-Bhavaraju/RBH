@@ -6,11 +6,13 @@ import Test from "../components/Test";
 import StackNavigation from '../navigation/StackNavigation';
 import AddChild from '../components/AddChildForm'
 import AddDonor from '../components/AddDonorForm';
-import AddDonor2 from '../components/AddDonorForm2';
-import AddDonor3 from '../components/AddDonorForm3';
+import IndividualContribution1 from '../components/IndividualContributionForm1';
+import IndividualContribution2 from '../components/IndividualContributionForm2';
 import DonorFormStackNavigator from '../navigation/DonorFormNavigation';
+import SearchDonorFormStackNavigator from '../navigation/SearchDonorFormNavigation';
 import SearchDonor from '../components/SearchDonor';
 import AddChildNavigation from '../navigation/AddChildNavigation';
+import LeadDonorFormNavigation from '../navigation/LeadDonorFormNavigation';
 
 export default class PresentScreen extends Component {
 
@@ -27,14 +29,11 @@ export default class PresentScreen extends Component {
         else if (this.props.screen === 'addDonor') {
             return <DonorFormStackNavigator screenProps={this.props.navigation} />;
         }        
-        // else if (this.props.screen === 'addDonor2') {
-        //     return <AddDonor2 screenProps={this.props.navigation} />;
-        // }
-        // else if (this.props.screen === 'addDonor3') {
-        //     return <AddDonor3 screenProps={this.props.navigation} />;
-        // }
+        else if (this.props.screen === 'leadDonor') {
+            return <LeadDonorFormNavigation screenProps={this.props.navigation} />;
+        }
         else if (this.props.screen === 'searchDonor') {
-            return <SearchDonor screenProps={this.props.navigation} />;
+            return <SearchDonorFormStackNavigator screenProps={this.props.navigation} />;
         }
         else if (this.props.screen === 'report') {
             return <Text>Report Screen</Text>;

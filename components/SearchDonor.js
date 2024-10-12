@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import RadioForm from 'react-native-simple-radio-button';
 import { base_url } from '../constants/Base';
 import { getOrgId, getHomeCode } from '../constants/LoginConstant';
+import { setSelectedDonor } from '../constants/DonorConstants';
 
 export default class SearchDonor extends React.Component {
     state = {
@@ -176,6 +177,7 @@ export default class SearchDonor extends React.Component {
                                                 selectedDonor: this.state.selectedDonor,
                                                 formikValues: values,  // Pass Formik values
                                             });
+                                            setSelectedDonor(this.state.selectedDonor);
                                         }}
                                         disabled={!this.state.selectedDonor} // Disable if no donor selected
                                     />

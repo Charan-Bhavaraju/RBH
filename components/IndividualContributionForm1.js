@@ -20,7 +20,7 @@ import {buildTestImageName, buildProdImageName} from '../constants/ChildConstant
 import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
-const AddDonorSchema2 = yup.object({
+const IndividualContributionSchema1 = yup.object({
     City: yup.string(),
     Home: yup.string(),
     DonationDate: yup.string(),//.required(),
@@ -34,7 +34,7 @@ let imagePath = null;
 
 const defaultImg = require('../assets/person.png');
 
-export default class AddDonor extends React.Component{
+export default class IndividualContribution1 extends React.Component{
     constructor(props) {
         super(props);
     }
@@ -63,7 +63,8 @@ export default class AddDonor extends React.Component{
         selectedHomes : [],
         homesVisible: false,
         orgLevel : getOrgLevelId(),
-        rainbowHome : getRainbowHome()
+        rainbowHome : getRainbowHome(),
+        orgid : 0
     };
     
     // componentDidUpdate(prevProps, prevState) {
@@ -178,6 +179,7 @@ export default class AddDonor extends React.Component{
         console.log("Mounting Data")
         let orgId = getOrgId();
         this.setState({orgid: orgId});
+        console.log(this.state.orgid)
         this.addDonorConstants();
         this.fetchItemsData();
     }
@@ -218,124 +220,6 @@ export default class AddDonor extends React.Component{
         console.log(request_body);
         console.log(this.state.selectedCities, this.state.selectedHomes)
         this.setState({contributionPage1: request_body})
-        // var imageupload = false;
-        // fetch(base_url+"/child", {
-        //     method: 'POST',
-        //     headers: {
-        //         Accept: 'application/json',
-        //         'Content-Type': 'application/json',
-        //         'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //     },
-        //     body: request_body,
-        // })
-        // .then((response) =>{
-        //     if(response.ok) {
-        //         console.log("printing status");
-        //         console.log(response.status);
-        //         console.log("printing status");
-        //         response.json().then((responseJson) => {
-        //             let DonorId = responseJson.childNo;
-        //             let childName = responseJson.DonorName;
-        //             this.loadStats();
-        //             let imageUri = '';
-        //             if(imagePath === null) {
-        //                 imageUri= ''
-        //             }
-        //             else {
-        //                 imageUri = imagePath;
-        //             }
-        //             console.log("Image URI");
-        //             console.log(imageUri);
-        //             console.log("Image URI");
-        //             let imageName = buildTestImageName(responseJson.childNo, responseJson.DonorName);
-        //             let photoUrl = base_url+"/upload-image/"+responseJson.childNo + imageName;
-        //             console.log(photoUrl);
-        //             var formdata = new FormData();
-        //             formdata.append('file', { uri: imageUri, name: `${imageName.split('/')[2]}.jpg`, type: 'image/jpg' });
-        //             fetch(photoUrl, {
-        //                 method: 'PUT',
-        //                 headers: {
-        //                     'content-type': 'multipart/form-data;boundary=----WebKitFormBoundaryyEmKNDsBKjB7QEqu',
-        //                     'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-        //                 },
-        //                 body: formdata,
-        //             })
-        //             .then((response) => {
-        //                 console.log("*****");
-        //                 console.log(response.status);
-        //                 console.log("******");
-        //                 if(response.status == 200) {
-        //                             this.state.photoUploadMessage = ". Succesfully uploaded image";
-        //                             imageupload = true;
-        //                 }
-        //                 else {
-        //                             this.state.photoUploadMessage = ". Error uploading image";
-        //                 }
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                             'Added Child',
-        //                             this.state.submitAlertMessage,
-        //                             [
-        //                                 { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                             ],
-        //                             { cancelable: false },
-        //                 ); 
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //             .catch((error)=> {
-        //                 this.state.photoUploadMessage = ".Error uploading image";
-        //                 this.setState({submitAlertMessage: 'Successfully added Child '+childName+' in '+getHomeCode()+ this.state.photoUploadMessage});
-        //                 Alert.alert(
-        //                     'Added Child',
-        //                     this.state.submitAlertMessage,
-        //                     [
-        //                         { text: 'OK', onPress: () => this.props.navigation.goBack() },
-        //                     ],
-        //                     { cancelable: false },
-        //                 );
-        //                 this.setState({isVisible: true, errorDisplay: true});
-        //                 this.setState({showLoader: false,loaderIndex:0});
-        //             })
-        //         })
-        //     }
-        //     else {
-        //         if(response.status == 500) {
-        //             response.json().then((responseJson) => {
-        //                 console.log(responseJson)
-        //                 if(responseJson.message == "Duplicate profile") {
-        //                     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //                     Alert.alert(
-        //                         'Failed To Add Child',
-        //                         responseJson.message+". Child already present.",
-        //                         [
-        //                             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //                         ],
-        //                         { cancelable: false },
-        //                     );
-        //                     this.setState({isVisible: true, errorDisplay: true});
-        //                     this.setState({showLoader: false,loaderIndex:0});
-        //                 }
-        //             })
-        //         }
-        //         else {
-        //             throw Error(response.status);
-        //         }
-        //     }
-        // })
-        // .catch((error) => {
-        //     this.setState({submitAlertMessage: 'Unable to add child. Plesae contact the Admin.'});
-        //     Alert.alert(
-        //         'Failed To Add Child',
-        //         this.state.submitAlertMessage,
-        //         [
-        //             { text: 'OK', onPress: () => console.log("Failed to add child") },
-        //         ],
-        //         { cancelable: false },
-        //     );
-        //     this.setState({isVisible: true, errorDisplay: true});
-        //     this.setState({showLoader: false,loaderIndex:0});
-        // });
     }
 
     
@@ -357,7 +241,7 @@ export default class AddDonor extends React.Component{
                         Quantity: ''
                     }
                 }
-                validationSchema = {AddDonorSchema2}
+                validationSchema = {IndividualContributionSchema1}
                 onSubmit = {async (values, actions) => {
                     // this.setState({showLoader: true,loaderIndex:10});
                     this.setState({submitButtonDisabled: true});
@@ -365,7 +249,7 @@ export default class AddDonor extends React.Component{
                     let alertMessage = this.state.submitAlertMessage;
                     console.log(result);
                     this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('AddDonor3', {donorDetails: this.props.navigation.state.params.donorDetails, contributionPage1: this.state.contributionPage1});
+                    this.props.navigation.navigate('IndividualContribution2', {donorDetails: this.props.navigation.state.params.donorDetails, contributionPage1: this.state.contributionPage1});
                 }}
                 >
                     {props => (
@@ -432,7 +316,7 @@ export default class AddDonor extends React.Component{
                                  this.state.homesVisible ? <MultiSelect
                                           hideTags
                                           items={this.state.homes}
-                                          uniqueKey="rhCode"
+                                          uniqueKey="rhNo"
                                           ref={(component) => { this.multiSelect = component }}
                                           onSelectedItemsChange={this.onSelectedHomesChange}
                                           selectedItems={selectedHomes}

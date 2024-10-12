@@ -1,12 +1,19 @@
 import {createStackNavigator} from 'react-navigation-stack';
 import {createAppContainer} from 'react-navigation'
 import {React} from 'react';
+import SearchDonor from '../components/SearchDonor'
 import AddDonor from '../components/AddDonorForm';
 import IndividualContribution1 from '../components/IndividualContributionForm1';
 import IndividualContribution2 from '../components/IndividualContributionForm2';
 import HomeScreen from '../screens/HomeScreen';
 
 const screens = {
+    SearchDonor: {
+        screen: SearchDonor,
+        navigationOptions: () => ({
+          title: 'Search Donor',
+        }),
+    },
     AddDonor: {
         screen: AddDonor,
         navigationOptions: () => ({
@@ -27,7 +34,7 @@ const screens = {
     }
 }
 
-const DonorFormStackNavigator = createStackNavigator(screens, {
+const SearchDonorFormStackNavigator = createStackNavigator(screens, {
     defaultNavigationOptions: {
     headerStyle: {
       height: 50
@@ -35,4 +42,4 @@ const DonorFormStackNavigator = createStackNavigator(screens, {
     safeAreaInsets: { top: 0 }
   }})
 
-export default createAppContainer(DonorFormStackNavigator)
+export default createAppContainer(SearchDonorFormStackNavigator)

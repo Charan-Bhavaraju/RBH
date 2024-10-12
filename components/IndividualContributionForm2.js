@@ -5,21 +5,17 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import {Feather} from '@expo/vector-icons';
 import {Formik} from 'formik';
 import {globalStyles} from '../styles/global';
-import * as ImagePicker from 'expo-image-picker';
 import * as yup from 'yup';
 import moment from 'moment';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import {base_url,getDataAsync} from '../constants/Base';
 import { ActivityIndicator } from 'react-native';
 import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
-import * as Permissions from 'expo-permissions';
-import {guidGenerator} from '../constants/Base';
-import {buildTestImageName, buildProdImageName} from '../constants/ChildConstants';
 import base64 from 'react-native-base64';
 import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome, getRainbowHome } from '../constants/LoginConstant'
+import { getUserName, getPassword } from '../constants/LoginConstant';
 
-
-const AddDonorSchema3 = yup.object({
+const IndividualContributionSchema2 = yup.object({
     InkindItem: yup.string(),//.required(),
     BudgetedFromDonation: yup.string(),//.required(),
     UnBudgetedFromDonation: yup.string(),//.required(),
@@ -53,6 +49,7 @@ export default class AddDonor extends React.Component{
         pageThree: true,
         currentPage: 1,
         submitButtonDisabled: false,
+        sponsorId: 0
     };
 
 
@@ -141,7 +138,12 @@ export default class AddDonor extends React.Component{
     }
 
     _alertUser() {
-        Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('AddDonor')}],
+        const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
+        if(donorDetails.fromSearchFlag === false) {
+            Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('AddDonor', {reset: true})}],
+            {cancelable: false},);
+        }
+        Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('SearchDonor')}],
         {cancelable: false},);
     }
 
@@ -159,62 +161,11 @@ export default class AddDonor extends React.Component{
         console.log(value);
         handleChange(value);
     }
-
-    _submitAddDonorForm(values) {
-        console.log("submitdonor called");
-        // console.log("Props", this.props.navigation.state.params.donorDetails, this.props.navigation.state.params.contributionPage1)
+    async _submitContributionForm(values){
+        console.log("submitcontribution called");
+        const contributionPage1 = JSON.parse(this.props.navigation.state.params.contributionPage1)
         const isoTimestamp = new Date().toISOString();
         const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
-        const contributionPage1 = JSON.parse(this.props.navigation.state.params.contributionPage1)
-        // call add donor
-        let donor_request_body = JSON.stringify({
-            "address": "",
-            "birthday": "",
-            "createdBy": getUserId(),
-            "createdOn": isoTimestamp,
-            "donorTypeId": donorDetails.DonorType,
-            "emailId": donorDetails.Email,
-            "mobileNo": donorDetails.PhoneNumber,
-            "modifiedBy": getUserId(),
-            "modifiedOn": isoTimestamp,
-            "rhNo": getRainbowHome().stateNetworkNo,
-            "panNumber": donorDetails.PAN,
-            "sponsorName": donorDetails.DonorName,
-            "source" : donorDetails.Source
-        });
-        console.log(donor_request_body)
-
-        fetch(base_url+"/sponsors/createSponsor", {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
-            },
-            body: donor_request_body,
-        })
-        .then((response) =>{
-            if(response.ok) {
-                console.log(response.json)
-            }
-            else {
-                console.log("failed")
-            }
-        })
-        .catch((error) => {
-            this.setState({submitAlertMessage: 'Unable to add donor. Plesae contact the Admin.'});
-            Alert.alert(
-                'Failed To Add donor',
-                this.state.submitAlertMessage,
-                [
-                    { text: 'OK', onPress: () => console.log("Failed to add donor") },
-                ],
-                { cancelable: false },
-            );
-            this.setState({isVisible: true, errorDisplay: true});
-            this.setState({showLoader: false,loaderIndex:0});
-        });
-
         // add to contribution table
         let contribution_request_body = JSON.stringify({
             "amount": contributionPage1.Amount,
@@ -223,7 +174,7 @@ export default class AddDonor extends React.Component{
             "createdOn": isoTimestamp,
             "BudgetedFromDonation": values.BudgetedFromDonation, //
             "UnBudgetedFromDonation": values.UnBudgetedFromDonation, //
-            "DonationAdditionalNotes": values.DonationAdditionalNotes, // donation occasion?
+            "donationOccasion": values.DonationAdditionalNotes, // donation occasion?
             "SpecialDayDate": values.SpecialDayDate, //
             "donationReasonId": values.DonationReason,
             "donorPreferenceId": values.DonorPreference,
@@ -231,24 +182,14 @@ export default class AddDonor extends React.Component{
             "modifiedBy": getUserId(),
             "modifiedOn": isoTimestamp,
             "programTypeId": contributionPage1.ProgramType,
-            "paymentModeId": contributionPage1.PaymentMode,
+            "paymentModeId": contributionPage1.PaymentMode, //
             "quantity": contributionPage1.Quantity,
-            "rhNo": getRainbowHome().stateNetworkNo,
-            "sponsorId": "", //
+            "rhNos": contributionPage1.Home,
+            "sponsorId": this.state.sponsorId, 
             "sponsorName": donorDetails.DonorName,
-            "sponsorshipTypeID": "" //
+            "sponsorshipTypeID": "" // individual donation
         });
-        // let request_body = JSON.stringify({
-        //     "InkindItem": values.InkindItem,
-        //     "BudgetedFromDonation": values.BudgetedFromDonation,
-        //     "UnBudgetedFromDonation": values.UnBudgetedFromDonation,
-        //     "DonationReason": values.DonationReason,
-        //     "DonationAdditionalNotes": values.DonationAdditionalNotes,
-        //     "SpecialDayDate": values.SpecialDayDate,
-        //     "PurposeOfDonation": values.PurposeOfDonation,
-        //     "DonorPreference": values.DonorPreference
-        // });
-        console.log(contribution_request_body);
+        console.log(contribution_request_body)
 
 
         fetch(base_url+"/createContribution", {
@@ -280,7 +221,67 @@ export default class AddDonor extends React.Component{
             );
             this.setState({isVisible: true, errorDisplay: true});
             this.setState({showLoader: false,loaderIndex:0});
+        });       
+    }
+
+    async _submitAddDonorForm(values) {
+        // console.log("Props", this.props.navigation.state.params.donorDetails, this.props.navigation.state.params.contributionPage1)
+        console.log("submitdonor called");
+        const isoTimestamp = new Date().toISOString();
+        const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
+        // call add donor
+        let donor_request_body = JSON.stringify({
+            "address": "",
+            "birthday": "",
+            "createdBy": getUserId(),
+            "createdOn": isoTimestamp,
+            "donorTypeId": donorDetails.DonorType,
+            "emailId": donorDetails.Email,
+            "mobileNo": donorDetails.PhoneNumber,
+            "modifiedBy": getUserId(),
+            "modifiedOn": isoTimestamp,
+            "rhNo": getRainbowHome().stateNetworkNo,
+            "panNumber": donorDetails.PAN,
+            "sponsorName": donorDetails.DonorName,
+            "source" : donorDetails.Source
         });
+        console.log(donor_request_body)
+
+        await fetch(base_url+"/sponsors/createSponsor", {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
+            },
+            body: donor_request_body,
+        })
+        .then((response) =>{
+            if(response.ok) {
+                response.json().then((responseJson) => {
+                    console.log(responseJson)
+                    this.setState({sponsorId: responseJson.sponsorId})
+                    console.log("Donor Created with sponsorId:", this.state.sponsorId)
+                })
+            }
+            else {
+                console.log("failed")
+            }
+        })
+        .catch((error) => {
+            this.setState({submitAlertMessage: 'Unable to add donor. Please contact the Admin.'});
+            Alert.alert(
+                'Failed To Add donor',
+                this.state.submitAlertMessage,
+                [
+                    { text: 'OK', onPress: () => console.log("Failed to add donor") },
+                ],
+                { cancelable: false },
+            );
+            this.setState({isVisible: true, errorDisplay: true});
+            this.setState({showLoader: false,loaderIndex:0});
+        });
+
     }
 
     render() {
@@ -311,13 +312,21 @@ export default class AddDonor extends React.Component{
                         DonorPreference:1
                     }
                 }
-                validationSchema = {AddDonorSchema3}
+                validationSchema = {IndividualContributionSchema2}
                 onSubmit = {async (values, actions) => {
                     // this.setState({showLoader: true,loaderIndex:10});
                     this.setState({submitButtonDisabled: true});
-                    let result = this._submitAddDonorForm(values);
+                    const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
+                    if(donorDetails.fromSearchFlag === false) {
+                        console.log("Creating Donor")
+                        let result = await this._submitAddDonorForm(values);
+                        console.log(result);
+                    }else {
+                        this.setState({sponsorId: donorDetails.sponsorNo})
+                    }
+                    let res = await this._submitContributionForm(values);
+                    console.log(res);
                     let alertMessage = this.state.submitAlertMessage;
-                    console.log(result);
                     this.setState({submitButtonDisabled: false});
                     this._alertUser()
                 }}
