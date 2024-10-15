@@ -226,6 +226,10 @@ export default class LeadDonor3 extends React.Component{
 
     render() {
         const { selectedCities, selectedHomes } = this.state;
+        const radio_props = [
+                            { label: 'Yes', value: '1' },
+                            { label: 'No', value: '2' },
+                        ];
         return (
             <View style = {globalStyles.container}>
                 
@@ -265,11 +269,11 @@ export default class LeadDonor3 extends React.Component{
                                     <View style={globalStyles.backgroundlogoimageview}>
                                         <Image PaymentMode = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
-                                
-                                <Text style = {globalStyles.label}>Contribution Towards</Text>
 
-                                {/* City */}
-                                <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
+
+
+                                {/* Willing to Support */}
+                                <Text style = {globalStyles.label}>Willing to Support<Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.orgLevel ===5 ?
                                     <TextInput
                                     style = {globalStyles.inputText}
@@ -302,133 +306,94 @@ export default class LeadDonor3 extends React.Component{
                                     />
                                     }
                                 <Text style = {globalStyles.errormsg}>{props.touched.City && props.errors.City}</Text>
-                                {/* Home */}
-                                <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.orgLevel ===5 ?
-                                    <TextInput
-                                    style = {globalStyles.inputText}
-                                    value={this.state.Home}
-                                    editable={false}  
-                                    selectTextOnFocus={false}
-                                    onChangeText = {props.handleChange('Home')}
-                                    />                                
-                                    :
-                                 this.state.homesVisible ? <MultiSelect
-                                          hideTags
-                                          items={this.state.homes}
-                                          uniqueKey="rhNo"
-                                          ref={(component) => { this.multiSelect = component }}
-                                          onSelectedItemsChange={this.onSelectedHomesChange}
-                                          selectedItems={selectedHomes}
-                                          selectText="Pick Items"
-                                          searchInputPlaceholderText="Search Home"
-                                        //   onChangeInput={ (text)=> console.log(text)}
-                                        //   tagRemoveIconColor="#CCC"
-                                        //   tagBorderColor="#CCC"
-                                        //   tagTextColor="#CCC"
-                                        //   selectedItemTextColor="#CCC"
-                                        //   selectedItemIconColor="#CCC"
-                                        //   itemTextColor="#000"
-                                          displayKey="rhName"
-                                        //   searchInputStyle={{ color: '#CCC' }}
-                                        //   submitButtonColor="#CCC"
-                                          submitButtonText="Select"
-                                        /> : <Text style = {globalStyles.label}>Select City</Text>
 
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                                                
-                                {/* Donation Date */}
-                                <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
-                                <View style={globalStyles.dobView}>
-                                    <TextInput
-                                        style = {globalStyles.inputText, globalStyles.dobValue}
-                                        value = {this.state.donationdate}
-                                        editable = {false}
-                                        onValueChange = {props.handleChange('DonationDate')}
-                                    />
-                                    <TouchableHighlight onPress={this.showDatepickerDD}>
-                                        <View>
-                                            <Feather style={globalStyles.dobBtn}  name="calendar"/>
-                                        </View>
-                                    </TouchableHighlight>
-                                    {/* <Button style= {globalStyles.dobBtn} onPress={this.showDatepicker} title="Select DOB" /> */}
-                                    {this.state.showdd && 
-                                        <DateTimePicker
-                                            style={{width: 200}}
-                                            mode="date" //The enum of date, datetime and time
-                                            value={ new Date() }
-                                            mode= { 'date' }
-                                            onChange= {(e,date) => this._pickDd(e,date,props.handleChange('DonationDate'))} 
-                                            maximumDate= { new Date() }
+                                {/* Expected Amount */}
+
+                                 <TextInput
+                                 keyboardType="numeric"
+                                 style = {globalStyles.inputText}
+                                 onChangeText = {props.handleChange('Amount')}
+                                 value = {props.values.Amount}
+                                 placeholder="Expected Amount"
+                                 // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
+                                                                 />
+                                 <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
+
+
+
+                                {/* Utilisation Duration */}
+                                <Text style = {globalStyles.label}>Utilisation Duration<Text style={{color:"red"}}></Text> :</Text>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    {/* First Date Field */}
+                                    <View style={[globalStyles.dobView, { flex: 1, marginRight: 5 }]}>
+
+                                        <TextInput
+                                            style={[globalStyles.inputText, globalStyles.dobValue]}
+                                            value={this.state.startDate}
+                                            editable={false}
+                                            onChangeText={props.handleChange('StartDate')}
                                         />
-                                    }
+                                        <TouchableHighlight onPress={this.showDatepickerStart}>
+                                            <View>
+                                                <Feather style={globalStyles.dobBtn} name="calendar" />
+                                            </View>
+                                        </TouchableHighlight>
+                                        {this.state.showStartDatePicker &&
+                                            <DateTimePicker
+                                                style={{ width: 200 }}
+                                                mode="date"
+                                                value={new Date()}
+                                                onChange={(e, date) => this._pickStartDate(e, date, props.handleChange('StartDate'))}
+                                                maximumDate={new Date()}
+                                            />
+                                        }
+                                    </View>
+
+                                    {/* Second Date Field */}
+                                    <View style={[globalStyles.dobView, { flex: 1, marginLeft: 5 }]}>
+
+                                        <TextInput
+                                            style={[globalStyles.inputText, globalStyles.dobValue]}
+                                            value={this.state.endDate}
+                                            editable={false}
+                                            onChangeText={props.handleChange('EndDate')}
+                                        />
+                                        <TouchableHighlight onPress={this.showDatepickerEnd}>
+                                            <View>
+                                                <Feather style={globalStyles.dobBtn} name="calendar" />
+                                            </View>
+                                        </TouchableHighlight>
+                                        {this.state.showEndDatePicker &&
+                                            <DateTimePicker
+                                                style={{ width: 200 }}
+                                                mode="date"
+                                                value={new Date()}
+                                                onChange={(e, date) => this._pickEndDate(e, date, props.handleChange('EndDate'))}
+                                                maximumDate={new Date()}
+                                            />
+                                        }
+                                    </View>
                                 </View>
                                 <Text style = {globalStyles.errormsg}>{props.touched.DonationDate && props.errors.DonationDate}</Text>
 
-                                {/* Program Type */}
-                                <Text style = {globalStyles.label}>Program Type<Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.ProgramType}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('ProgramType', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Program Type' color='grey' value = ''/>
-                                    { 
-                                        this.state.programtypes.map((item) => {
-                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                
-                                
-                                
-                                {/* PaymentMode */}
-                                <Text style = {globalStyles.label}>Payment Mode <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.PaymentMode}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('PaymentMode', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='PaymentMode' color='grey' value = ''/>
-                                    {
-                                        this.state.paymentmodes.map((item) => {
-                                            return <Picker.Item key = {item.PaymentModeId} label = {item.PaymentMode} value = {item.PaymentModeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.PaymentMode && props.errors.PaymentMode}</Text>
-                                
+                                <Text style={globalStyles.label}>Is proposal submitted? <Text style={{ color: "red" }}></Text></Text>
 
-                                {/* Amount/Worth of Inkind */}
-                                <Text style = {globalStyles.label}>Amount/Worth of In-kind <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Amount')}
-                                    value = {props.values.Amount}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
-                                
-                                {/* Quantity/Days */}
-                                <Text style = {globalStyles.label}>Quantity/Days <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Quantity')}
-                                    value = {props.values.Quantity}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.Quantity && props.errors.Quantity}</Text>
+                                <RadioForm
+                                style={{ marginLeft: 10, marginTop: 10 }}
+                                radio_props={radio_props}
+                                buttonSize={10}
+                                formHorizontal={true}
+                                buttonOuterSize={20}
+                                buttonColor={'black'}
+                                buttonInnerColor={'black'}
+                                selectedButtonColor={'blue'}
+                                labelStyle={{ marginRight: 20 }}
+                                onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
+                                            />
+
                                  
 
-                                <Button style = {globalStyles.button} title="Next" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
+                                <Button style = {globalStyles.button} title="Submit" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled} style={{ marginTop: 20 }}/>
                                 </View>}
                             </View>
                         </ScrollView>  

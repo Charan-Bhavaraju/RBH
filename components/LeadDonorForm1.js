@@ -157,7 +157,7 @@ export default class LeadDonor1 extends React.Component{
                                 </View>
 
                                 {/* Organization Name */}
-                                <Text style = {globalStyles.label}>Organization Name <Text style={{color:"red"}}>*</Text> :</Text>
+
                                 { this.state.fromSearchFlag ===false ?
                                 <TextInput
                                     style = {globalStyles.inputText}
@@ -203,11 +203,12 @@ export default class LeadDonor1 extends React.Component{
                                 }
                                 <Text style = {globalStyles.errormsg}>{props.touched.DonorType && props.errors.DonorType}</Text>
                                 
-
-                                <Text style={globalStyles.label}>Organization Region <Text style={{ color: "red" }}>*</Text> :</Text>
+                                {/* Organization Region */}
+                                <Text style={globalStyles.label}>Organization Region <Text style={{ color: "red" }}></Text></Text>
 
                                 <RadioForm
-                                style={{ marginLeft: 10 }}
+
+                                style={{ marginLeft: 10, marginTop: 10 }}
                                 radio_props={radio_props}
                                 buttonSize={10}
                                 formHorizontal={true}
@@ -215,6 +216,7 @@ export default class LeadDonor1 extends React.Component{
                                 buttonColor={'black'}
                                 buttonInnerColor={'black'}
                                 selectedButtonColor={'blue'}
+                                labelStyle={{ marginRight: 20 }}
                                 onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
                                             />
 
