@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import RadioForm from 'react-native-simple-radio-button';
 import {Button, Text, TextInput, View, Picker, ScrollView,
     KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
 import {Formik} from 'formik';
@@ -17,7 +17,7 @@ const AddDonorSchema = yup.object({
     DonorType: yup.string(),//.required(),
     Source: yup.string(),//.required(),
     PhoneNumber: yup.string(),//.required().length(10, 'Phonenumber must be 10 digits long'),
-    Email: yup.string(),//.required().email('Please enter a valid email address'),
+//    Email: yup.string(),//.required().email('Please enter a valid email address'),
     PAN: yup.string()//.required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
 });
 
@@ -100,7 +100,7 @@ export default class LeadDonor1 extends React.Component{
             "DonorType": values.DonorType,
             "Source": values.Source,
             "PhoneNumber": values.PhoneNumber,
-            "Email": values.Email,
+//            "Email": values.Email,
             "PAN": values.PAN,
             "fromSearchFlag": this.state.fromSearchFlag,
             "sponsorNo": this.state.selectedDonorDetails.sponsorNo
@@ -110,6 +110,10 @@ export default class LeadDonor1 extends React.Component{
     }
 
     render() {
+          const radio_props = [
+                    { label: 'Local', value: '1' },
+                    { label: 'FCRA', value: '2' },
+                ];
         return (
             <View style = {globalStyles.container}>
                 <Formik
@@ -120,7 +124,7 @@ export default class LeadDonor1 extends React.Component{
                         DonorType: '',
                         Source: '',
                         PhoneNumber: '',
-                        Email: '',
+//                        Email: '',
                         PAN:''
                     }
                 }
@@ -149,17 +153,17 @@ export default class LeadDonor1 extends React.Component{
                                     </View>
                                 
                                 <View style={globalStyles.PageHeaderView}>
-                                    <Text style={globalStyles.PageHeader}>Add New Donor</Text>
+                                    <Text style={globalStyles.PageHeader}></Text>
                                 </View>
 
-                                {/* Donor Name */}
-                                <Text style = {globalStyles.label}>Donor Name <Text style={{color:"red"}}>*</Text> :</Text>
+                                {/* Organization Name */}
+                                <Text style = {globalStyles.label}>Organization Name <Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.fromSearchFlag ===false ?
                                 <TextInput
                                     style = {globalStyles.inputText}
                                     onChangeText = {props.handleChange('DonorName')}
                                     value = {props.values.DonorName}
-                                    placeholder="Donor Name"
+                                    placeholder="Organization Name"
                                 />
                                 :
                                 <TextInput
@@ -172,8 +176,8 @@ export default class LeadDonor1 extends React.Component{
                                 <Text style = {globalStyles.errormsg}>{props.touched.DonorName && props.errors.DonorName}</Text>
 
 
-                                {/* Donor Type */}
-                                <Text style = {globalStyles.label}>Donor Type <Text style={{color:"red"}}>*</Text> :</Text>
+                                {/* Organization Type */}
+                                <Text style = {globalStyles.label}>Organization Type <Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.fromSearchFlag ===false ?
                                 <Picker
                                     selectedValue = {props.values.DonorType}
@@ -182,7 +186,7 @@ export default class LeadDonor1 extends React.Component{
                                     }}
                                     style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label='Donor Type' color='grey' value = ''/>
+                                    <Picker.Item label='Organization Type' color='grey' value = ''/>
                                     { 
                                         this.state.donortypes.map((item) => {
                                             return <Picker.Item key = {item.id} label = {item.donorTypeName} value = {item.id}/>
@@ -199,83 +203,50 @@ export default class LeadDonor1 extends React.Component{
                                 }
                                 <Text style = {globalStyles.errormsg}>{props.touched.DonorType && props.errors.DonorType}</Text>
                                 
-                                
-                                
-                                {/* Source */}
-                                <Text style = {globalStyles.label}>Source <Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.fromSearchFlag ===false ?
-                                <Picker
-                                    selectedValue = {props.values.Source}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('Source', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Source' color='grey' value = ''/>
-                                    {
-                                        this.state.sources.map((item) => {
-                                            return <Picker.Item key = {item.SourceId} label = {item.Source} value = {item.SourceId}/>
-                                        })
-                                    }
-                                </Picker>
-                                :
-                                <TextInput
-                                style = {globalStyles.inputText}
-                                value={this.state.sources}
-                                editable={false}
-                                selectTextOnFocus={false}
-                                />          
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.Source && props.errors.Source}</Text>
-                                
 
-                                {/* Phone Number */}
-                                <Text style = {globalStyles.label}>Phone Number <Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.fromSearchFlag ===false ?
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('PhoneNumber')}
-                                    value = {props.values.PhoneNumber}
-                                    placeholder="Phone Number"
-                                />
-                                : 
-                                <TextInput
-                                style = {globalStyles.inputText}
-                                value={this.state.selectedDonorDetails.mobileNo}
-                                editable={false}
-                                selectTextOnFocus={false}
-                                />          
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.PhoneNumber && props.errors.PhoneNumber}</Text>
-                                
+                                <Text style={globalStyles.label}>Organization Region <Text style={{ color: "red" }}>*</Text> :</Text>
+
+                                <RadioForm
+                                style={{ marginLeft: 10 }}
+                                radio_props={radio_props}
+                                buttonSize={10}
+                                formHorizontal={true}
+                                buttonOuterSize={20}
+                                buttonColor={'black'}
+                                buttonInnerColor={'black'}
+                                selectedButtonColor={'blue'}
+                                onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
+                                            />
+
                                 {/* Email */}
-                                <Text style = {globalStyles.label}>Email <Text style={{color:"red"}}>*</Text> :</Text>
+                                <Text style = {globalStyles.label}>Organization Address <Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.fromSearchFlag ===false ?
                                 <TextInput
                                     style = {globalStyles.inputText}
                                     onChangeText = {props.handleChange('Email')}
                                     value = {props.values.Email}
-                                    placeholder='Email'
+                                    placeholder='Address'
+                                    multiline={true}
+                                    numberOfLines={4}
                                 />
-                                : 
+                                :
                                 <TextInput
                                 style = {globalStyles.inputText}
                                 value={this.state.selectedDonorDetails.emailId}
                                 editable={false}
                                 selectTextOnFocus={false}
-                                />          
+                                />
                                 }
                                 <Text style = {globalStyles.errormsg}>{props.touched.Email && props.errors.Email}</Text>
-                                 
-                                {/* PAN */}
-                                <Text style = {globalStyles.label}> PAN <Text style={{color:"red"}}>*</Text> :</Text>
+
+                                {/* Phone Number */}
+                                <Text style = {globalStyles.label}> Phone Number <Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.fromSearchFlag ===false ?
                                 <TextInput
                                     style = {globalStyles.inputText}
                                     onChangeText = {props.handleChange('PAN')}
                                     value = {props.values.PAN}
-                                    placeholder='PAN'
+                                    placeholder='Phone Number'
                                     autoCapitalize="characters" 
                                 />
                                 : 
@@ -288,7 +259,7 @@ export default class LeadDonor1 extends React.Component{
                                 }
                                 <Text style = {globalStyles.errormsg}>{props.touched.PAN && props.errors.PAN}</Text>
                                                                                                   
-                                <Button style = {globalStyles.button} title= { this.state.fromSearchFlag ===false ? "ADD DONOR":"Continue"} onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
+                                <Button style = {globalStyles.button} title= { this.state.fromSearchFlag ===false ? "Next":"Continue"} onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
                                 </View>}
                             </View>
                         </ScrollView>  

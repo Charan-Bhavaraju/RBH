@@ -266,10 +266,20 @@ export default class LeadDonor2 extends React.Component{
                                         <Image PaymentMode = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
                                 
-                                <Text style = {globalStyles.label}>Contribution Towards</Text>
+                                {/* Point of contact Name */}
+                                <Text style = {globalStyles.label}>Designation <Text style={{color:"red"}}>*</Text> :</Text>
+                                <TextInput
 
-                                {/* City */}
-                                <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
+                                    style = {globalStyles.inputText}
+                                    onChangeText = {props.handleChange('Amount')}
+                                    value = {props.values.Amount}
+                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
+                                />
+                                <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
+
+
+                                {/* Gender */}
+                                <Text style = {globalStyles.label}>Gender<Text style={{color:"red"}}>*</Text> :</Text>
                                 { this.state.orgLevel ===5 ?
                                     <TextInput
                                     style = {globalStyles.inputText}
@@ -277,7 +287,7 @@ export default class LeadDonor2 extends React.Component{
                                     editable={false}
                                     selectTextOnFocus={false}
                                     onChangeText = {props.handleChange('City')}
-                                    />                                
+                                    />
                                     :
                                     <MultiSelect
                                           hideTags
@@ -295,118 +305,38 @@ export default class LeadDonor2 extends React.Component{
                                         //   selectedItemTextColor="#CCC"
                                         //   selectedItemIconColor="#CCC"
                                         //   itemTextColor="#000"
-                                          displayKey="stateNetworkName" 
+                                          displayKey="stateNetworkName"
                                         //   searchInputStyle={{ color: '#CCC' }}
                                         //   submitButtonColor="#CCC"
                                           submitButtonText="Select"
                                     />
                                     }
                                 <Text style = {globalStyles.errormsg}>{props.touched.City && props.errors.City}</Text>
-                                {/* Home */}
-                                <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.orgLevel ===5 ?
-                                    <TextInput
+
+
+                                {/* Designation */}
+                                <Text style = {globalStyles.label}>Designation <Text style={{color:"red"}}>*</Text> :</Text>
+                                <TextInput
+
                                     style = {globalStyles.inputText}
-                                    value={this.state.Home}
-                                    editable={false}  
-                                    selectTextOnFocus={false}
-                                    onChangeText = {props.handleChange('Home')}
-                                    />                                
-                                    :
-                                 this.state.homesVisible ? <MultiSelect
-                                          hideTags
-                                          items={this.state.homes}
-                                          uniqueKey="rhNo"
-                                          ref={(component) => { this.multiSelect = component }}
-                                          onSelectedItemsChange={this.onSelectedHomesChange}
-                                          selectedItems={selectedHomes}
-                                          selectText="Pick Items"
-                                          searchInputPlaceholderText="Search Home"
-                                        //   onChangeInput={ (text)=> console.log(text)}
-                                        //   tagRemoveIconColor="#CCC"
-                                        //   tagBorderColor="#CCC"
-                                        //   tagTextColor="#CCC"
-                                        //   selectedItemTextColor="#CCC"
-                                        //   selectedItemIconColor="#CCC"
-                                        //   itemTextColor="#000"
-                                          displayKey="rhName"
-                                        //   searchInputStyle={{ color: '#CCC' }}
-                                        //   submitButtonColor="#CCC"
-                                          submitButtonText="Select"
-                                        /> : <Text style = {globalStyles.label}>Select City</Text>
+                                    onChangeText = {props.handleChange('Amount')}
+                                    value = {props.values.Amount}
+                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
+                                />
+                                <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
+                                
+                                {/* Email ID*/}
+                                <Text style = {globalStyles.label}>Email ID <Text style={{color:"red"}}>*</Text> :</Text>
+                                <TextInput
 
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                                                
-                                {/* Donation Date */}
-                                <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
-                                <View style={globalStyles.dobView}>
-                                    <TextInput
-                                        style = {globalStyles.inputText, globalStyles.dobValue}
-                                        value = {this.state.donationdate}
-                                        editable = {false}
-                                        onValueChange = {props.handleChange('DonationDate')}
-                                    />
-                                    <TouchableHighlight onPress={this.showDatepickerDD}>
-                                        <View>
-                                            <Feather style={globalStyles.dobBtn}  name="calendar"/>
-                                        </View>
-                                    </TouchableHighlight>
-                                    {/* <Button style= {globalStyles.dobBtn} onPress={this.showDatepicker} title="Select DOB" /> */}
-                                    {this.state.showdd && 
-                                        <DateTimePicker
-                                            style={{width: 200}}
-                                            mode="date" //The enum of date, datetime and time
-                                            value={ new Date() }
-                                            mode= { 'date' }
-                                            onChange= {(e,date) => this._pickDd(e,date,props.handleChange('DonationDate'))} 
-                                            maximumDate= { new Date() }
-                                        />
-                                    }
-                                </View>
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonationDate && props.errors.DonationDate}</Text>
+                                    style = {globalStyles.inputText}
+                                    onChangeText = {props.handleChange('Quantity')}
+                                    value = {props.values.Quantity}
+                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
+                                />
+                                <Text style = {globalStyles.errormsg}>{props.touched.Quantity && props.errors.Quantity}</Text>
 
-                                {/* Program Type */}
-                                <Text style = {globalStyles.label}>Program Type<Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.ProgramType}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('ProgramType', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Program Type' color='grey' value = ''/>
-                                    { 
-                                        this.state.programtypes.map((item) => {
-                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                
-                                
-                                
-                                {/* PaymentMode */}
-                                <Text style = {globalStyles.label}>Payment Mode <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.PaymentMode}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('PaymentMode', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='PaymentMode' color='grey' value = ''/>
-                                    {
-                                        this.state.paymentmodes.map((item) => {
-                                            return <Picker.Item key = {item.PaymentModeId} label = {item.PaymentMode} value = {item.PaymentModeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.PaymentMode && props.errors.PaymentMode}</Text>
-                                
-
-                                {/* Amount/Worth of Inkind */}
-                                <Text style = {globalStyles.label}>Amount/Worth of In-kind <Text style={{color:"red"}}>*</Text> :</Text>
+                                <Text style = {globalStyles.label}>Phone Number<Text style={{color:"red"}}>*</Text> :</Text>
                                 <TextInput
                                     keyboardType="numeric"
                                     style = {globalStyles.inputText}
@@ -415,18 +345,6 @@ export default class LeadDonor2 extends React.Component{
                                     // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
                                 />
                                 <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
-                                
-                                {/* Quantity/Days */}
-                                <Text style = {globalStyles.label}>Quantity/Days <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Quantity')}
-                                    value = {props.values.Quantity}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.Quantity && props.errors.Quantity}</Text>
-                                 
 
                                 <Button style = {globalStyles.button} title="Next" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
                                 </View>}
