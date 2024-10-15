@@ -14,6 +14,7 @@ import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'reac
 import base64 from 'react-native-base64';
 import { setOrgId, getOrgId, setHomeCode, getHomeCode, setUserName, setPassword, setUserId, getUserId, setOrgLevelId, setRainbowHome, getRainbowHome } from '../constants/LoginConstant'
 import { getUserName, getPassword } from '../constants/LoginConstant';
+import { setSelectedDonor } from '../constants/DonorConstants';
 
 const IndividualContributionSchema2 = yup.object({
     InkindItem: yup.string(),//.required(),
@@ -167,6 +168,7 @@ export default class AddDonor extends React.Component{
         const isoTimestamp = new Date().toISOString();
         const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
         // add to contribution table
+        setSelectedDonor({});
         let contribution_request_body = JSON.stringify({
             "amount": contributionPage1.Amount,
             "contributionDate": contributionPage1.DonationDate,

@@ -5,6 +5,8 @@ import SearchDonor from '../components/SearchDonor'
 import AddDonor from '../components/AddDonorForm';
 import IndividualContribution1 from '../components/IndividualContributionForm1';
 import IndividualContribution2 from '../components/IndividualContributionForm2';
+import LeadContribution from '../components/LeadContributionForm';
+import LeadEdit from '../components/LeadEditForm';
 import HomeScreen from '../screens/HomeScreen';
 
 const screens = {
@@ -31,7 +33,19 @@ const screens = {
       navigationOptions: () => ({
         title: 'Enter Donation Details',
       }),
-    }
+    },
+    LeadEdit: {
+      screen: LeadEdit,
+      navigationOptions: () => ({
+        title: 'Edit Lead',
+      }),
+    },
+    LeadContribution: {
+      screen: LeadContribution,
+      navigationOptions: () => ({
+        title: 'Add Donation',
+        }),
+    },
 }
 
 const SearchDonorFormStackNavigator = createStackNavigator(screens, {
