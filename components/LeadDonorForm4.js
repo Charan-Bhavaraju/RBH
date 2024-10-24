@@ -1,137 +1,157 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TextInput, Button, Switch, StyleSheet, Picker, Image, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
 
-export default function LeadDonor4() {
-    const [isFollowUp, setIsFollowUp] = useState(false);
-    const [assignedTo, setAssignedTo] = useState('');
-    const [followUpDate, setFollowUpDate] = useState(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false); // Toggle for date picker
-    const [mode, setMode] = useState('');
-    const [remarks, setRemarks] = useState('');
+export default class LeadDonor4 extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isFollowUp: false,
+            assignedTo: '',
+            followUpDate: new Date(),
+            showDatePicker: false,
+            mode: '',
+            remarks: '',
+        };
+    }
 
-    const toggleSwitch = () => setIsFollowUp(previousState => !previousState);
-
-    // Function to open the date picker
-    const showDatepicker = () => setShowDatePicker(true);
-
-    // Function to handle date selection
-    const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || followUpDate;
-        setShowDatePicker(false); // Close the date picker after selection
-        setFollowUpDate(currentDate); // Update the selected date
+    // Toggle follow-up switch
+    toggleSwitch = () => {
+        this.setState(prevState => ({ isFollowUp: !prevState.isFollowUp }));
     };
 
-    return (
-        <View style={styles.container}>
-            {/* Success Icon */}
-            <View style={styles.iconContainer}>
-                <Image
-                    source={require('../assets/success_icon.png')} // Your success icon path
-                    style={styles.successIcon}
-                />
-            </View>
+    // Show date picker
+    showDatepicker = () => {
+        this.setState({ showDatePicker: true });
+    };
 
-            {/* Lead Successfully Created Message */}
-            <Text style={styles.successMessage}>Lead successfully created!</Text>
-            <Text style={styles.subMessage}>
-                Here is the lead no created for your reference
-            </Text>
+    // Handle date selection
+    onDateChange = (event, selectedDate) => {
+        const followUpDate = selectedDate || this.state.followUpDate;
+        this.setState({ followUpDate, showDatePicker: false });
+    };
 
-            {/* Lead Number */}
-            <Text style={styles.leadNumber}>Lead No.: Code_E-0120</Text>
+    // Handle form submission
+    handleSubmit = () => {
+        const { assignedTo, followUpDate, mode, remarks } = this.state;
+        console.log('Follow-up info:', { assignedTo, followUpDate, mode, remarks });
 
-            {/* Lead Brought By Input */}
-            <TextInput
-                style={styles.input}
-                placeholder="Lead Brought By*"
-                value="Mr. Parth Sanghi" // Pre-filled example
-                editable={false} // Make it non-editable if it's a fixed value
-            />
+        // Navigate to another page after submission
+        this.props.navigation.navigate('LeadEditForm');
+    };
 
-            {/* Switch to add follow-up */}
-            <View style={styles.followUpContainer}>
-                <Text style={styles.followUpText}>Do you want to add follow up?</Text>
-                <Switch
-                    trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={isFollowUp ? '#f5dd4b' : '#f4f3f4'}
-                    onValueChange={toggleSwitch}
-                    value={isFollowUp}
-                />
-            </View>
+    render() {
+        const { isFollowUp, assignedTo, followUpDate, showDatePicker, mode, remarks } = this.state;
 
-            {/* Conditionally Render Follow-up Fields */}
-            {isFollowUp && (
-                <>
-                    {/* Assigned To Header */}
-                    <View style={styles.inputWrapper}>
-                        <Text style={styles.inputLabel}>Assigned to</Text> 
-                        <Picker
-                            selectedValue={assignedTo}
-                            style={styles.pickerInput} // Use the same style for the picker
-                            onValueChange={(itemValue) => setAssignedTo(itemValue)}>
-                            {/* Placeholder item */}
-                            <Picker.Item label="Person Name(s)" value="" />
-                            <Picker.Item label="John Doe" value="john" />
-                            <Picker.Item label="Jane Smith" value="jane" />
-                        </Picker>
-                    </View>
-
-
-                    {/* Follow-up Date Header */}
-                    <View style={styles.inputWrapper}>
-                        <Text style={styles.inputLabel}>Follow-up Date</Text>
-                        <TouchableOpacity onPress={showDatepicker}>
-                            <TextInput
-                                style={styles.pickerInput}
-                                value={moment(followUpDate).format('DD/MM/YYYY')}
-                                editable={false} // Disable manual input
-                                placeholder="Select Date"
-                            />
-                        </TouchableOpacity>
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={followUpDate}
-                                mode="date"
-                                display="default"
-                                onChange={onDateChange}
-                            />
-                        )}
-                    </View>
-
-                    {/* Mode */}
-                    <Picker
-                        selectedValue={mode}
-                        style={styles.pickerInput}
-                        onValueChange={(itemValue) => setMode(itemValue)}>
-                        <Picker.Item label="Mode" value="" />
-                        <Picker.Item label="Phone Call" value="phone" />
-                        <Picker.Item label="Email" value="email" />
-                    </Picker>
-
-                    {/* Remarks */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Remarks"
-                        multiline
-                        numberOfLines={4}
-                        onChangeText={setRemarks}
-                        value={remarks}
+        return (
+            <View style={styles.container}>
+                {/* Success Icon */}
+                <View style={styles.iconContainer}>
+                    <Image
+                        source={require('../assets/success.png')} // Path to your success icon
+                        style={styles.successIcon}
                     />
-                </>
-            )}
+                </View>
 
-            {/* Done Button */}
-            <TouchableOpacity
-                style={[styles.button, { backgroundColor: isFollowUp && assignedTo && mode ? '#4682B4' : '#B0C4DE' }]}
-                onPress={() => console.log('Follow-up info:', { assignedTo, followUpDate, mode, remarks })}
-                disabled={!isFollowUp || !assignedTo || !mode}
-            >
-                <Text style={styles.buttonText}>DONE</Text>
-            </TouchableOpacity>
-        </View>
-    );
+                {/* Lead Successfully Created Message */}
+                <Text style={styles.successMessage}>Lead successfully created!</Text>
+                <Text style={styles.subMessage}>Here is the lead no created for your reference</Text>
+
+                {/* Lead Number */}
+                <Text style={styles.leadNumber}>Lead No.: Code_E-0120</Text>
+
+                {/* Lead Brought By Input */}
+                <TextInput
+                    style={styles.input}
+                    placeholder="Lead Brought By*"
+                    value="Mr. Parth Sanghi" // Pre-filled example
+                    editable={false} // Non-editable if it's a fixed value
+                />
+
+                {/* Switch to add follow-up */}
+                <View style={styles.followUpContainer}>
+                    <Text style={styles.followUpText}>Do you want to add follow up?</Text>
+                    <Switch
+                        trackColor={{ false: '#767577', true: '#81b0ff' }}
+                        thumbColor={isFollowUp ? '#f5dd4b' : '#f4f3f4'}
+                        onValueChange={this.toggleSwitch}
+                        value={isFollowUp}
+                    />
+                </View>
+
+                {/* Conditionally Render Follow-up Fields */}
+                {isFollowUp && (
+                    <>
+                        {/* Assigned To Header */}
+                        <View style={styles.inputWrapper}>
+                            <Text style={styles.inputLabel}>Assigned to</Text>
+                            <Picker
+                                selectedValue={assignedTo}
+                                style={styles.pickerInput}
+                                onValueChange={(itemValue) => this.setState({ assignedTo: itemValue })}
+                            >
+                                <Picker.Item label="Person Name(s)" value="" />
+                                <Picker.Item label="John Doe" value="john" />
+                                <Picker.Item label="Jane Smith" value="jane" />
+                            </Picker>
+                        </View>
+
+                        {/* Follow-up Date Header */}
+                        <View style={styles.inputWrapper}>
+                            <Text style={styles.inputLabel}>Follow-up Date</Text>
+                            <TouchableOpacity onPress={this.showDatepicker}>
+                                <TextInput
+                                    style={styles.pickerInput}
+                                    value={moment(followUpDate).format('DD/MM/YYYY')}
+                                    editable={false}
+                                    placeholder="Select Date"
+                                />
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    value={followUpDate}
+                                    mode="date"
+                                    display="default"
+                                    onChange={this.onDateChange}
+                                />
+                            )}
+                        </View>
+
+                        {/* Mode */}
+                        <Picker
+                            selectedValue={mode}
+                            style={styles.pickerInput}
+                            onValueChange={(itemValue) => this.setState({ mode: itemValue })}
+                        >
+                            <Picker.Item label="Mode" value="" />
+                            <Picker.Item label="Phone Call" value="phone" />
+                            <Picker.Item label="Email" value="email" />
+                        </Picker>
+
+                        {/* Remarks */}
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Remarks"
+                            multiline
+                            numberOfLines={4}
+                            onChangeText={(text) => this.setState({ remarks: text })}
+                            value={remarks}
+                        />
+                    </>
+                )}
+
+                {/* Done Button */}
+                <TouchableOpacity
+                    style={[styles.button, { backgroundColor: isFollowUp && assignedTo && mode ? '#4682B4' : '#B0C4DE' }]}
+                    onPress={this.handleSubmit}
+                    disabled={!isFollowUp || !assignedTo || !mode}
+                >
+                    <Text style={styles.buttonText}>DONE</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 }
 
 const styles = StyleSheet.create({
@@ -174,7 +194,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         paddingHorizontal: 10,
         marginBottom: 20,
-        borderRadius: 5, // Added border radius to match Picker
+        borderRadius: 5,
     },
     pickerInput: {
         height: 40,
@@ -183,10 +203,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         justifyContent: 'center',
         marginBottom: 20,
-        borderRadius: 5, // Added border radius for consistency
-    },
-    dateInputWrapper: {
-        width: '100%', // Ensure the TouchableOpacity covers the full width
+        borderRadius: 5,
     },
     followUpContainer: {
         flexDirection: 'row',
@@ -210,24 +227,13 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
     },
-    // Wrapper around the input to add padding/margin for better spacing
     inputWrapper: {
         width: '100%',
         marginBottom: 20,
     },
-    // Label for the picker, like a header above the input
     inputLabel: {
         fontSize: 12,
         color: 'gray',
-        marginBottom: 5, // Adjust spacing as needed
+        marginBottom: 5,
     },
-    // Style for the picker input
-    pickerInput: {
-        height: 40,
-        width: '100%',
-        borderColor: 'gray',
-        borderWidth: 1,
-        justifyContent: 'center',
-    },
-
 });
