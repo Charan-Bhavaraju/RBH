@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, Button, Switch, StyleSheet, Picker, Image, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
+import {Formik} from 'formik';
 
 export default class LeadDonor4 extends React.Component {
     constructor(props) {
@@ -143,12 +144,12 @@ export default class LeadDonor4 extends React.Component {
 
                 {/* Done Button */}
                 <TouchableOpacity
-                    style={[styles.button, { backgroundColor: isFollowUp && assignedTo && mode ? '#4682B4' : '#B0C4DE' }]}
-                    onPress={this.handleSubmit}
-                    disabled={!isFollowUp || !assignedTo || !mode}
+                style={[styles.button, { backgroundColor: '#4682B4' }]} // Button will always be enabled, so consistent color
+                onPress={this.handleSubmit} // Calls the handleSubmit function
                 >
-                    <Text style={styles.buttonText}>DONE</Text>
+                <Text style={styles.buttonText}>DONE</Text>
                 </TouchableOpacity>
+
             </View>
         );
     }

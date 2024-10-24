@@ -1,443 +1,369 @@
-import React from 'react';
-import {Button, Text, TextInput, View, Picker, ScrollView,
-    KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
-import MultiSelect from 'react-native-multiple-select';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {Feather} from '@expo/vector-icons';
-import {Formik} from 'formik';
-import {globalStyles} from '../styles/global';
-import * as ImagePicker from 'expo-image-picker';
-import * as yup from 'yup';
-import moment from 'moment';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-import {base_url,getDataAsync} from '../constants/Base';
-import { ActivityIndicator } from 'react-native';
-import { getOrgId, getHomeCode, getOrgLevelId, getRainbowHome } from '../constants/LoginConstant';
-import RadioForm, { RadioButton, RadioButtonInput, RadioButtonLabel } from 'react-native-simple-radio-button';
-import * as Permissions from 'expo-permissions';
-import {guidGenerator} from '../constants/Base';
-import {buildTestImageName, buildProdImageName} from '../constants/ChildConstants';
-import base64 from 'react-native-base64';
-import {getPassword, getUserName} from '../constants/LoginConstant';
+import React, { Component } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, TextInput, Picker } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons'; // For icons like phone, location, etc.
+import { withNavigation } from 'react-navigation'; // For navigation props
 
-const LeadEditSchema = yup.object({
-    City: yup.string(),
-    Home: yup.string(),
-    DonationDate: yup.string(),//.required(),
-    ProgramType: yup.string(),//.required(),
-    PaymentMode: yup.string(),//.required(),
-    Amount: yup.string(),//.required(),
-    Quantity: yup.string()//.required()
+class LeadEditForm extends Component {
+  state = {
+    followUps: [
+      { id: 1, label: 'Follow up 1', date: '28/08/2024' },
+      { id: 2, label: 'Follow up 2', date: '28/09/2024' },
+    ],
+    isModalVisible: false,
+    newFollowUp: {
+      assignedTo: '',
+      date: '',
+      mode: '',
+      remarks: '',
+    },
+  };
+
+  toggleModal = () => {
+    this.setState({ isModalVisible: !this.state.isModalVisible });
+  };
+
+  handleSaveFollowUp = () => {
+    const { followUps, newFollowUp } = this.state;
+
+    // Add the new follow-up to the list
+    const updatedFollowUps = [
+      ...followUps,
+      {
+        id: followUps.length + 1,
+        label: `Follow up ${followUps.length + 1}`,
+        date: newFollowUp.date,
+      },
+    ];
+
+    // Update state and close modal
+    this.setState({
+      followUps: updatedFollowUps,
+      newFollowUp: { assignedTo: '', date: '', mode: '', remarks: '' }, // Reset form
+      isModalVisible: false,
+    });
+  };
+
+  handleInputChange = (field, value) => {
+    this.setState({
+      newFollowUp: { ...this.state.newFollowUp, [field]: value },
+    });
+  };
+
+  render() {
+    const { followUps, isModalVisible, newFollowUp } = this.state;
+
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+
+        {/* Lead Details */}
+        <View style={styles.leadDetails}>
+          <View style={styles.leadHeaderContainer}>
+            <Text style={styles.leadDetailsTitle}>Lead Details</Text>
+            <View style={styles.leadNoContainer}>
+              <Text style={styles.leadNo}>Lead No.: Code_E-0120</Text>
+            </View>
+          </View>
+          <Text style={styles.leadSubText}>Lead was brought by Mr. Parth Sanghi</Text>
+
+          {/* Organization Card */}
+          <View style={styles.orgCard}>
+            <View style={styles.orgHeader}>
+              <Text style={styles.orgName}>Organization Name</Text>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>In Progress</Text>
+              </View>
+            </View>
+            <Text style={styles.orgDetails}>Org Type: Company | Org Region: Local</Text>
+            <Text style={styles.orgAddress}>
+              Org Address
+            </Text>
+            <Text style={styles.orgPhone}>+91-Org Contact Number</Text>
+          </View>
+        </View>
+
+
+        {/* Follow-up Section */}
+        <View style={styles.followUpContainer}>
+          <Text style={styles.followUpTitle}>Follow up with the lead</Text>
+          <TouchableOpacity style={styles.addFollowUpButton} onPress={this.toggleModal}>
+            <Text style={styles.addFollowUpText}>+ Add Follow up</Text>
+          </TouchableOpacity>
+
+          {/* Display list of Follow-ups */}
+          {followUps.map((followUp) => (
+            <View style={styles.followUpItem} key={followUp.id}>
+              <Text style={styles.followUpLabel}>{followUp.label}</Text>
+              <Text style={styles.followUpDate}>{followUp.date}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Convert to Donor Button */}
+        <TouchableOpacity style={styles.convertButton}>
+          <Text style={styles.convertButtonText}>CONVERT TO DONOR</Text>
+        </TouchableOpacity>
+
+        {/* Modal for Adding Follow-up */}
+        <Modal visible={isModalVisible} animationType="slide" transparent={true}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Add Follow up</Text>
+
+              <View style={styles.inputContainer}>
+                <Text>Assigned to</Text>
+                <Picker
+                  selectedValue={newFollowUp.assignedTo}
+                  style={styles.input}
+                  onValueChange={(itemValue) => this.handleInputChange('assignedTo', itemValue)}
+                >
+                  <Picker.Item label="Person Name(s)" value="" />
+                  <Picker.Item label="John Doe" value="John Doe" />
+                  <Picker.Item label="Jane Smith" value="Jane Smith" />
+                </Picker>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text>Follow Up Date</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newFollowUp.date}
+                  placeholder="Select Date"
+                  onChangeText={(value) => this.handleInputChange('date', value)}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text>Mode</Text>
+                <Picker
+                  selectedValue={newFollowUp.mode}
+                  style={styles.input}
+                  onValueChange={(itemValue) => this.handleInputChange('mode', itemValue)}
+                >
+                  <Picker.Item label="Mode" value="" />
+                  <Picker.Item label="Call" value="Call" />
+                  <Picker.Item label="Email" value="Email" />
+                </Picker>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text>Remarks</Text>
+                <TextInput
+                  style={styles.textArea}
+                  value={newFollowUp.remarks}
+                  placeholder="Enter remarks"
+                  onChangeText={(value) => this.handleInputChange('remarks', value)}
+                  multiline={true}
+                />
+              </View>
+
+              {/* Modal Buttons */}
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity style={styles.cancelButton} onPress={this.toggleModal}>
+                  <Text style={styles.cancelButtonText}>CANCEL</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.saveButton} onPress={this.handleSaveFollowUp}>
+                  <Text style={styles.saveButtonText}>SAVE</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+  },
+  leadHeaderContainer: {
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  leadDetailsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  leadNoContainer: {
+    backgroundColor: '#E6E6FA',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  leadNo: {
+    color: '#6A0DAD',
+    fontSize: 16,
+  },
+  leadDetails: {
+    marginBottom: 20,
+  },
+  leadSubText: {
+    fontSize: 14,
+    color: '#333',
+    marginBottom: 15,
+  },
+  orgCard: {
+    padding: 15,
+    backgroundColor: '#F8F8FF',
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  orgHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  orgName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  statusBadge: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 5,
+  },
+  statusText: {
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  orgDetails: {
+    fontSize: 14,
+    marginBottom: 5,
+  },
+  orgAddress: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 5,
+  },
+  orgPhone: {
+    fontSize: 14,
+    color: '#0000FF',
+    marginBottom: 5,
+  },
+  detailButton: {
+    padding: 15,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    marginBottom: 10,
+  },
+  detailButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  followUpContainer: {
+    marginBottom: 20,
+  },
+  followUpTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  addFollowUpButton: {
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#E0FFFF',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  addFollowUpText: {
+    fontSize: 14,
+    color: '#1E90FF',
+    fontWeight: 'bold',
+  },
+  followUpItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  followUpLabel: {
+    fontSize: 14,
+  },
+  followUpDate: {
+    fontSize: 14,
+    color: '#888',
+  },
+  convertButton: {
+    padding: 15,
+    backgroundColor: '#4682B4',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  convertButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    padding: 10,
+    borderRadius: 5,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderColor: '#D3D3D3',
+    padding: 10,
+    borderRadius: 5,
+    height: 100,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: '#D3D3D3',
+    padding: 15,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  saveButton: {
+    backgroundColor: '#1E90FF',
+    padding: 15,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
 });
 
-let imagePath = null;
-
-const defaultImg = require('../assets/person.png');
-
-export default class LeadEdit extends React.Component{
-    constructor(props) {
-        super(props);
-    }
-
-    state = {
-        loaderIndex: 0,
-        showLoader: false,
-        programtypes: [],
-        paymentmodes: [],
-        donationdate: '',
-        City : getRainbowHome()['city'],
-        Home : getRainbowHome()['rhName'],
-        showdd: false,
-        isVisible: false,
-        sucessDisplay: false,
-        errorDisplay: false,
-        pageOne: true,
-        pageTwo: true,
-        pageThree: true,
-        currentPage: 1,
-        submitButtonDisabled: false,
-        contributionPage1: "",
-        cities: [],
-        homes : [],
-        selectedCities : [],
-        selectedHomes : [],
-        homesVisible: false,
-        orgLevel : getOrgLevelId(),
-        rainbowHome : getRainbowHome(),
-        orgid : 0
-    };
-    
-    // componentDidUpdate(prevProps, prevState) {
-    //     // Check if 'count' has changed
-    //     if (prevState.selectedCities !== this.state.selectedCities && this.state.selectedCities.length >0){
-    //         this.setState({ homesVisible :true });
-    //     };
-    //     if (this.state.selectedCities.length ===0){
-    //         this.setState({ homesVisible :false });
-    //     };
-    // }
-    fetchItemsData() {
-        let orgLevel = getOrgLevelId();
-        console.log(orgLevel, getRainbowHome().stateNetworkNo)
-        if(orgLevel === 5){
-            console.log("User Org Level is 5")
-            getDataAsync(base_url + `/stateNetwork/${getRainbowHome().stateNetworkNo}`).then(res => {
-                let dataItems = res;
-                this.setState({ cities: [dataItems]});
-                console.log(cities);
-            })
-            this.setState({ homes: [getRainbowHome()]});
-        }
-        else {        
-            console.log("User Org Level is <5 ")
-
-            getDataAsync(base_url + '/stateNetwork').then(res => {
-                let dataItems = res;
-                console.log(res)
-                this.setState({ cities: dataItems});
-              })
-            
-        }
-
-        // console.log(this.state.cities, this.state.homes)
-    };
-
-
-    onSelectedCitiesChange = selectedCities => {
-        this.setState({ selectedCities :selectedCities });
-        this.setState({ homesVisible :true });
-        const queryParams = selectedCities
-        .map(city => `stateNetworkNos=${city}`) // Extract stateNetworkNo
-        .join('&'); // Join them with '&'
-
-        getDataAsync(base_url + '/homes?' +queryParams).then(res => {
-            let dataItems = res;
-            this.setState({ homes: dataItems});
-        }).catch(error => {
-            console.error('Error fetching data:', error);
-        });
-
-      };
-
-    onSelectedHomesChange = selectedHomes => {
-        this.setState({ selectedHomes :selectedHomes });
-      };
-
-    async addDonorConstants(){
-        // getDataAsync(base_url + '/programtypes').then(data => { this.setState({religions: data})});
-//        let programtypesdata = [{'ProgramTypeId' : 1, 'ProgramType': 'CCI'},{'ProgramTypeId' : 2, 'ProgramType': 'CBC-RCCLC'},{'ProgramTypeId' : 3, 'ProgramType': 'Residential Hostels'}]
-//        this.setState({programtypes: programtypesdata})
-        getDataAsync(base_url + '/programType')
-                            .then(data => {
-                                let programTypeData = []
-                                for(let i = 0; i < data.length; i++){
-                                    programTypeData.push({
-                                              'ProgramTypeId': data[i].id,
-                                              'ProgramType': data[i].programTypeName,
-                                            });
-                                }
-                                 this.setState({programtypes: programTypeData})
-                             })
-
-        // getDataAsync(base_url + '/sources').then(data => { this.setState({communities: data})});
-//        let paymentmodesdata =[{'PaymentModeId' : 1, 'PaymentMode': 'Inkind'},{'PaymentModeId' : 2, 'PaymentMode': 'Cash'},{'PaymentModeId' : 3, 'PaymentMode': 'Cheque'},{'PaymentModeId' : 4, 'PaymentMode': 'UPI'},{'PaymentModeId' : 5, 'PaymentMode': 'Online'}]
-//        this.setState({paymentmodes: paymentmodesdata})
-        getDataAsync(base_url + '/paymentMode')
-                .then(data => {
-                    let paymentModeData = []
-                    for(let i = 0; i < data.length; i++){
-                        paymentModeData.push({
-                                  'PaymentModeId': data[i].sponsorshipTypeID,
-                                  'PaymentMode': data[i].sponsorshipType,
-                                });
-                    }
-                     this.setState({paymentmodes: paymentModeData})
-                 })
-
-    }
-
-    loadStats(){
-        getDataAsync(base_url + '/dashboard/' + getOrgId())
-            .then(data => {
-                let stats = [] 
-                for(let i = 0; i < data.length; i++){
-                    stats.push([data[i].statusValue, data[i].total])
-                }
-                this.props.navigation.state.params.updateStats(stats)
-             })
-    }
-
-    modalclickOKSuccess = () => {
-        this.props.navigation.goBack();
-    }
-
-    modalclickOKError = () => {
-        this.setState({isVisible: false});
-    }
-
-    componentDidMount() {
-        console.log("Mounting Data")
-        let orgId = getOrgId();
-        this.setState({orgid: orgId});
-        console.log(this.state.orgid)
-        this.addDonorConstants();
-        this.fetchItemsData();
-    }
-
-    _pickDd = (event,date,handleChange) => {
-        if(event["type"] == "dismissed") {
-
-        }
-        else {
-            let a = moment(date).format('YYYY-MM-DD');
-            this.setState({donationdate:a, showdd: false});
-            handleChange(a);
-        }
-    }
-
-    resetdatesandradio() {
-        this.setState({specialdaydate:''});
-    }
-
-    showDatepickerDD = () => {
-        this.setState({showdd: true});
-    };
-
-    _submitAddDonorForm(values) {
-        console.log("Props", this.props.navigation.state.params.donorDetails)
-        console.log("submitdonor called");
-        const city_value = this.state.orgLevel===5 ? [this.state.rainbowHome["rhCode"]] : this.state.selectedCities
-        const home_value = this.state.orgLevel===5 ? [this.state.rainbowHome["rhNo"]] : this.state.selectedHomes
-        let request_body = JSON.stringify({
-            "City": city_value,
-            "Home": home_value,
-            "DonationDate": values.DonationDate,
-            "ProgramType": values.ProgramType,
-            "PaymentMode": values.PaymentMode,
-            "Amount": values.Amount,
-            "Quantity": values.Quantity
-        });
-        console.log(request_body);
-        console.log(this.state.selectedCities, this.state.selectedHomes)
-        this.setState({contributionPage1: request_body})
-    }
-
-    
-
-    render() {
-        const { selectedCities, selectedHomes } = this.state;
-        return (
-            <View style = {globalStyles.container}>
-                
-                <Formik
-                initialValues = {
-                    {
-                        City : this.state.City,
-                        Home : this.state.Home,
-                        DonationDate: this.state.donationdate,
-                        ProgramType: '',
-                        PaymentMode: '',
-                        Amount: '',
-                        Quantity: ''
-                    }
-                }
-                validationSchema = {LeadEditSchema}
-                onSubmit = {async (values, actions) => {
-                    // this.setState({showLoader: true,loaderIndex:10});
-                    this.setState({submitButtonDisabled: true});
-                    let result = this._submitAddDonorForm(values);
-                    let alertMessage = this.state.submitAlertMessage;
-                    console.log(result);
-                    this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('IndividualContribution2', {donorDetails: this.props.navigation.state.params.donorDetails, contributionPage1: this.state.contributionPage1});
-                }}
-                >
-                    {props => (
-                        <KeyboardAvoidingView behavior="null"
-                                                    enabled style={globalStyles.keyboardavoid}
-                                                    keyboardVerticalOffset={0}>
-                        <View style={{ position: 'absolute', top:"45%",right: 0, left: 0, zIndex: this.state.loaderIndex }}>
-                            <ActivityIndicator animating={this.state.showLoader} size="large" color="red" />
-                        </View>
-                        <ScrollView showsVerticalScrollIndicator={false}>
-                            <View style= {globalStyles.topView}>
-                                {this.state.pageOne && <View>
-                                    <View style={globalStyles.backgroundlogoimageview}>
-                                        <Image PaymentMode = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
-                                    </View>
-                                
-                                <Text style = {globalStyles.label}>Contribution Towards</Text>
-
-                                {/* City */}
-                                <Text style = {globalStyles.label}>City<Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.orgLevel ===5 ?
-                                    <TextInput
-                                    style = {globalStyles.inputText}
-                                    value={this.state.City}
-                                    editable={false}
-                                    selectTextOnFocus={false}
-                                    onChangeText = {props.handleChange('City')}
-                                    />                                
-                                    :
-                                    <MultiSelect
-                                          hideTags
-                                          items={this.state.cities}
-                                          uniqueKey="stateNetworkNo"
-                                          ref={(component) => { this.multiSelect = component }}
-                                          onSelectedItemsChange={this.onSelectedCitiesChange}
-                                          selectedItems={selectedCities}
-                                          selectText="Pick Items"
-                                          searchInputPlaceholderText="Search City"
-                                        //   onChangeInput={ (text)=> console.log(text)}
-                                        //   tagRemoveIconColor="#CCC"
-                                        //   tagBorderColor="#CCC"
-                                        //   tagTextColor="#CCC"
-                                        //   selectedItemTextColor="#CCC"
-                                        //   selectedItemIconColor="#CCC"
-                                        //   itemTextColor="#000"
-                                          displayKey="stateNetworkName" 
-                                        //   searchInputStyle={{ color: '#CCC' }}
-                                        //   submitButtonColor="#CCC"
-                                          submitButtonText="Select"
-                                    />
-                                    }
-                                <Text style = {globalStyles.errormsg}>{props.touched.City && props.errors.City}</Text>
-                                {/* Home */}
-                                <Text style = {globalStyles.label}>Home<Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.orgLevel ===5 ?
-                                    <TextInput
-                                    style = {globalStyles.inputText}
-                                    value={this.state.Home}
-                                    editable={false}  
-                                    selectTextOnFocus={false}
-                                    onChangeText = {props.handleChange('Home')}
-                                    />                                
-                                    :
-                                 this.state.homesVisible ? <MultiSelect
-                                          hideTags
-                                          items={this.state.homes}
-                                          uniqueKey="rhNo"
-                                          ref={(component) => { this.multiSelect = component }}
-                                          onSelectedItemsChange={this.onSelectedHomesChange}
-                                          selectedItems={selectedHomes}
-                                          selectText="Pick Items"
-                                          searchInputPlaceholderText="Search Home"
-                                        //   onChangeInput={ (text)=> console.log(text)}
-                                        //   tagRemoveIconColor="#CCC"
-                                        //   tagBorderColor="#CCC"
-                                        //   tagTextColor="#CCC"
-                                        //   selectedItemTextColor="#CCC"
-                                        //   selectedItemIconColor="#CCC"
-                                        //   itemTextColor="#000"
-                                          displayKey="rhName"
-                                        //   searchInputStyle={{ color: '#CCC' }}
-                                        //   submitButtonColor="#CCC"
-                                          submitButtonText="Select"
-                                        /> : <Text style = {globalStyles.label}>Select City</Text>
-
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                                                
-                                {/* Donation Date */}
-                                <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
-                                <View style={globalStyles.dobView}>
-                                    <TextInput
-                                        style = {globalStyles.inputText, globalStyles.dobValue}
-                                        value = {this.state.donationdate}
-                                        editable = {false}
-                                        onValueChange = {props.handleChange('DonationDate')}
-                                    />
-                                    <TouchableHighlight onPress={this.showDatepickerDD}>
-                                        <View>
-                                            <Feather style={globalStyles.dobBtn}  name="calendar"/>
-                                        </View>
-                                    </TouchableHighlight>
-                                    {/* <Button style= {globalStyles.dobBtn} onPress={this.showDatepicker} title="Select DOB" /> */}
-                                    {this.state.showdd && 
-                                        <DateTimePicker
-                                            style={{width: 200}}
-                                            mode="date" //The enum of date, datetime and time
-                                            value={ new Date() }
-                                            mode= { 'date' }
-                                            onChange= {(e,date) => this._pickDd(e,date,props.handleChange('DonationDate'))} 
-                                            maximumDate= { new Date() }
-                                        />
-                                    }
-                                </View>
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonationDate && props.errors.DonationDate}</Text>
-
-                                {/* Program Type */}
-                                <Text style = {globalStyles.label}>Program Type<Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.ProgramType}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('ProgramType', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Program Type' color='grey' value = ''/>
-                                    { 
-                                        this.state.programtypes.map((item) => {
-                                            return <Picker.Item key = {item.ProgramTypeId} label = {item.ProgramType} value = {item.ProgramTypeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.ProgramType && props.errors.ProgramType}</Text>
-                                
-                                
-                                
-                                {/* PaymentMode */}
-                                <Text style = {globalStyles.label}>Payment Mode <Text style={{color:"red"}}>*</Text> :</Text>
-                                <Picker
-                                    selectedValue = {props.values.PaymentMode}
-                                    onValueChange = {value => {
-                                        props.setFieldValue('PaymentMode', value);
-                                    }}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='PaymentMode' color='grey' value = ''/>
-                                    {
-                                        this.state.paymentmodes.map((item) => {
-                                            return <Picker.Item key = {item.PaymentModeId} label = {item.PaymentMode} value = {item.PaymentModeId}/>
-                                        })
-                                    }
-                                </Picker>
-                                <Text style = {globalStyles.errormsg}>{props.touched.PaymentMode && props.errors.PaymentMode}</Text>
-                                
-
-                                {/* Amount/Worth of Inkind */}
-                                <Text style = {globalStyles.label}>Amount/Worth of In-kind <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Amount')}
-                                    value = {props.values.Amount}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.Amount && props.errors.Amount}</Text>
-                                
-                                {/* Quantity/Days */}
-                                <Text style = {globalStyles.label}>Quantity/Days <Text style={{color:"red"}}>*</Text> :</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Quantity')}
-                                    value = {props.values.Quantity}
-                                    // onBlur = {props.handleBlur('PSOName')} this can be used for real-time validation
-                                />
-                                <Text style = {globalStyles.errormsg}>{props.touched.Quantity && props.errors.Quantity}</Text>
-                                 
-
-                                <Button style = {globalStyles.button} title="Next" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
-                                </View>}
-                            </View>
-                        </ScrollView>  
-                        </KeyboardAvoidingView>
-                                                  
-                    )}
-
-                </Formik>
-            </View>
-        );
-    }
-}
+// Wrap component to use navigation props
+export default withNavigation(LeadEditForm);
