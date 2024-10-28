@@ -16,38 +16,39 @@ export default class SearchDonor extends React.Component {
     };
 
     // API call to search sponsors
+    // Update the fetchDonors function
     fetchDonors = async (inputDonor) => {
         // Check if the input is numeric (for donor ID or phone number) or alphabetic (for name)
         const isNumeric = /^\d+$/.test(inputDonor);
         const isAlphabetic = /^[A-Za-z\s]+$/.test(inputDonor);
-    
+
         if (isAlphabetic && inputDonor.length < 3) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
-    
+
         if (!inputDonor) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
-    
+
         this.setState({ showLoader: true, submitButtonDisabled: true });
-    
+
         try {
             // Determine the endpoint based on searchType
             let endpoint = '';
-            if (this.state.searchType === 1) {
+            if (this.state.searchType == 1) {
                 endpoint = 'sponsors/donor';
-            } else if (this.state.searchType === 2) {
-                endpoint = 'get-lead';
-            } else if (this.state.searchType === 3) {
+            } else if (this.state.searchType == 2 || this.state.searchType == 3) {
                 endpoint = 'get-lead';
             }
-    
+
             const searchUrl = `${base_url}/${endpoint}?search=${inputDonor}`;
             let result = await fetch(searchUrl);
             result = await result.json();
-    
+            console.log(searchUrl);
+            console.log(this.state.searchType);
+
             if (result && result.length > 0) {
                 this.setState({ donorsList: result, submitButtonDisabled: false });
             } else {
@@ -60,17 +61,20 @@ export default class SearchDonor extends React.Component {
             this.setState({ showLoader: false });
         }
     };
-    
-    // Update _changeSearchType to set the correct search type
+
+    // Update the _changeSearchType function
     _changeSearchType = (value, handleChange) => {
         this.setState({ 
             searchType: value, 
             donorsList: [],        // Clear search results
             selectedDonor: null,   // Clear selected donor
             submitButtonDisabled: true // Disable the submit button
+        }, () => {
+            handleChange(value); // Update the formik value for search type
         });
-        handleChange(value);
     };
+
+
     
     
 
