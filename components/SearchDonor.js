@@ -187,16 +187,28 @@ export default class SearchDonor extends React.Component {
                                     <Button
                                         title="DONATE"
                                         onPress={() => {
-                                            // Navigate to the AddDonor screen, passing the Formik values and selected donor
-                                            this.props.navigation.navigate('AddDonor', {
-                                                navigation: this.props.navigation,
-                                                selectedDonor: this.state.selectedDonor,
-                                                formikValues: values,  // Pass Formik values
-                                            });
-                                            setSelectedDonor(this.state.selectedDonor);
+                                            const { searchType, selectedDonor } = this.state;
+
+                                            if (searchType === 2 || searchType === 3) { // Lead or Corporate Donation
+                                                this.props.navigation.navigate('LeadEdit', {
+                                                    navigation: this.props.navigation,
+                                                    selectedDonor,
+                                                    formikValues: values,
+                                                });
+                                            } else {
+                                                // Individual Donor case
+                                                this.props.navigation.navigate('AddDonor', {
+                                                    navigation: this.props.navigation,
+                                                    selectedDonor,
+                                                    formikValues: values,
+                                                });
+                                            }
+
+                                            setSelectedDonor(selectedDonor); // Store the selected donor
                                         }}
                                         disabled={!this.state.selectedDonor} // Disable if no donor selected
                                     />
+
 
                                 </View>
                             </ScrollView>
