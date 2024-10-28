@@ -77,15 +77,37 @@ export default class SearchDonor extends React.Component {
     // Store selected donor in state and clear the donor list
     selectDonor = (donor, setFieldValue) => {
         console.log(donor);
-        this.setState({ selectedDonor: donor, donorsList: [] });  // Clear the list on selection
-        setFieldValue('DonorName', donor.sponsorName);  // Set the selected donor's name in the form input
-        setFieldValue('SponsorNo', donor.sponsorNo);     // Store sponsorNo as well
-        setFieldValue('Address', donor.address);         // Store address
-        setFieldValue('Birthday', donor.birthday);       // Store birthday
-        setFieldValue('EmailId', donor.emailId);         // Store emailId
-        setFieldValue('MobileNo', donor.mobileNo);       // Store mobileNo
-        setFieldValue('PanNumber', donor.panNumber);     // Store panNumber
+    
+        // Clear the donor list on selection and set the selected donor
+        this.setState({ selectedDonor: donor, donorsList: [] });
+    
+        if (this.state.searchType === 1) {
+            // For Individual type (searchType === 1)
+            setFieldValue('DonorName', donor.sponsorName);
+            setFieldValue('SponsorNo', donor.sponsorNo);
+            setFieldValue('Address', donor.address);
+            setFieldValue('Birthday', donor.birthday);
+            setFieldValue('EmailId', donor.emailId);
+            setFieldValue('MobileNo', donor.mobileNo);
+            setFieldValue('PanNumber', donor.panNumber);
+    
+        } else if (this.state.searchType === 2 || this.state.searchType === 3) {
+            // For Lead or Corporate Donation types (searchType === 2 or 3)
+            setFieldValue('organisationName', donor.organisationName);
+            setFieldValue('leadOrganisationTypeId', donor.leadOrganisationTypeId);
+            setFieldValue('organisationRegion', donor.organisationRegion);
+            setFieldValue('address', donor.address);
+            setFieldValue('orgContactNumber', donor.orgContactNumber);
+            setFieldValue('pointOfContactName', donor.pointOfContactName);
+            setFieldValue('email', donor.email);
+            setFieldValue('pocContactNumber', donor.pocContactNumber);
+            setFieldValue('expectedAmount', donor.expectedAmount);
+            setFieldValue('followUp', donor.followUp);
+            setFieldValue('leadBroughtBy', donor.leadBroughtBy);
+            setFieldValue('willingToSupport', donor.willingToSupport);
+        }
     };
+    
 
     componentDidMount() {
         const orgId = getOrgId();
