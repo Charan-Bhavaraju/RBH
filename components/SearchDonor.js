@@ -134,6 +134,19 @@ export default class SearchDonor extends React.Component {
                         MobileNo: '',       // Add MobileNo to initial values
                         PanNumber: '',      // Add PanNumber to initial values
                         SearchType: 1,
+                        ...(this.state.searchType === 2 || this.state.searchType === 3 ? {
+                            organisationName: '',
+                            leadOrganisationTypeId: '',
+                            organisationRegion: '',
+                            orgContactNumber: '',
+                            pointOfContactName: '',
+                            email: '',
+                            pocContactNumber: '',
+                            expectedAmount: '',
+                            followUp: '',
+                            leadBroughtBy: '',
+                            willingToSupport: '',
+                        } : {})
                     }}
                 >
                     {({ handleChange, setFieldValue, values }) => (
