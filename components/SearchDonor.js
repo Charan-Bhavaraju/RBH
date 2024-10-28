@@ -9,7 +9,7 @@ import { setSelectedDonor } from '../constants/DonorConstants';
 export default class SearchDonor extends React.Component {
     state = {
         showLoader: false,
-        searchType: 3,
+        searchType: 1,
         donorsList: [],
         submitButtonDisabled: true,
         selectedDonor: null, // State to store selected donor
@@ -20,26 +20,34 @@ export default class SearchDonor extends React.Component {
         // Check if the input is numeric (for donor ID or phone number) or alphabetic (for name)
         const isNumeric = /^\d+$/.test(inputDonor);
         const isAlphabetic = /^[A-Za-z\s]+$/.test(inputDonor);
-
-        // If input is alphabetic, only search if length is greater than or equal to 3
+    
         if (isAlphabetic && inputDonor.length < 3) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
-
-        // If input is numeric (e.g., phone number or donor ID), search regardless of length
+    
         if (!inputDonor) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
             return;
         }
-
+    
         this.setState({ showLoader: true, submitButtonDisabled: true });
-
+    
         try {
-            const searchUrl = `${base_url}/sponsors/donor?search=${inputDonor}`;
+            // Determine the endpoint based on searchType
+            let endpoint = '';
+            if (this.state.searchType === 1) {
+                endpoint = 'sponsors/donor';
+            } else if (this.state.searchType === 2) {
+                endpoint = 'get-lead';
+            } else if (this.state.searchType === 3) {
+                endpoint = 'get-lead';
+            }
+    
+            const searchUrl = `${base_url}/${endpoint}?search=${inputDonor}`;
             let result = await fetch(searchUrl);
             result = await result.json();
-
+    
             if (result && result.length > 0) {
                 this.setState({ donorsList: result, submitButtonDisabled: false });
             } else {
@@ -52,6 +60,19 @@ export default class SearchDonor extends React.Component {
             this.setState({ showLoader: false });
         }
     };
+    
+    // Update _changeSearchType to set the correct search type
+    _changeSearchType = (value, handleChange) => {
+        this.setState({ 
+            searchType: value, 
+            donorsList: [],        // Clear search results
+            selectedDonor: null,   // Clear selected donor
+            submitButtonDisabled: true // Disable the submit button
+        });
+        handleChange(value);
+    };
+    
+    
 
     // Store selected donor in state and clear the donor list
     selectDonor = (donor, setFieldValue) => {
@@ -71,11 +92,6 @@ export default class SearchDonor extends React.Component {
         const homeCode = getHomeCode();
         this.setState({ orgid: orgId, homecode: homeCode });
     }
-
-    _changeSearchType = (value, handleChange) => {
-        this.setState({ searchType: value });
-        handleChange(value);
-    };
 
     render() {
         const radio_props = [
