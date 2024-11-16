@@ -21,13 +21,13 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const IndividualContributionSchema1 = yup.object({
-    City: yup.string(),
-    Home: yup.string(),
-    DonationDate: yup.string(),//.required(),
-    ProgramType: yup.string(),//.required(),
-    PaymentMode: yup.string(),//.required(),
-    Amount: yup.string(),//.required(),
-    Quantity: yup.string()//.required()
+    City: yup.string().required(),
+    Home: yup.string().required(),
+    DonationDate: yup.string().required(),
+    ProgramType: yup.string().required(),
+    PaymentMode: yup.string().required(),
+    Amount: yup.number().required().min(0),
+    Quantity: yup.number().required().min(0)
 });
 
 let imagePath = null;
@@ -84,7 +84,6 @@ export default class IndividualContribution1 extends React.Component{
             getDataAsync(base_url + `/stateNetwork/${getRainbowHome().stateNetworkNo}`).then(res => {
                 let dataItems = res;
                 this.setState({ cities: [dataItems]});
-                console.log(cities);
             })
             this.setState({ homes: [getRainbowHome()]});
         }
@@ -342,7 +341,7 @@ export default class IndividualContribution1 extends React.Component{
                                 <Text style = {globalStyles.label}>Donation Date<Text style={{color:"red"}}>*</Text> :</Text>
                                 <View style={globalStyles.dobView}>
                                     <TextInput
-                                        style = {globalStyles.inputText, globalStyles.dobValue}
+                                        style = {{...globalStyles.inputText, ...globalStyles.dobValue}}
                                         value = {this.state.donationdate}
                                         editable = {false}
                                         onValueChange = {props.handleChange('DonationDate')}
@@ -356,7 +355,6 @@ export default class IndividualContribution1 extends React.Component{
                                     {this.state.showdd && 
                                         <DateTimePicker
                                             style={{width: 200}}
-                                            mode="date" //The enum of date, datetime and time
                                             value={ new Date() }
                                             mode= { 'date' }
                                             onChange= {(e,date) => this._pickDd(e,date,props.handleChange('DonationDate'))} 

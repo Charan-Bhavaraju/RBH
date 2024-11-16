@@ -6,7 +6,8 @@ import LeadDonor2 from '../components/LeadDonorForm2';
 import LeadDonor3 from '../components/LeadDonorForm3';
 import LeadDonor4 from '../components/LeadDonorForm4';
 import LeadEditForm from '../components/LeadEditForm';
-import HomeScreen from '../screens/HomeScreen';
+import LeadContribution from '../components/LeadContributionForm';
+
 
 const screens = {
     LeadDonor1: {
@@ -36,6 +37,12 @@ const screens = {
       screen: LeadEditForm,
       navigationOptions: () => ({
         title: 'Edit Lead',
+      })
+    },
+    LeadContribution: {
+      screen: LeadContribution,
+      navigationOptions: () => ({
+        title: 'Add Donation',
       })
     }
 }

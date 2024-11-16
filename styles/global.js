@@ -13,6 +13,11 @@ export const globalStyles = StyleSheet.create({
         padding: 20,
         backgroundColor: 'white',
     },
+    headerText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 10,
+      },
     formcontainer: {
         flex: 1,
         padding: 20,

@@ -17,19 +17,16 @@ import { getUserName, getPassword } from '../constants/LoginConstant';
 import { setSelectedDonor } from '../constants/DonorConstants';
 
 const IndividualContributionSchema2 = yup.object({
-    InkindItem: yup.string(),//.required(),
-    BudgetedFromDonation: yup.string(),//.required(),
-    UnBudgetedFromDonation: yup.string(),//.required(),
-    DonationReason: yup.string(),//.required(),
-    DonationAdditionalNotes: yup.string(),//.required(),
-    SpecialDayDate: yup.string(),//.required(),
-    PurposeOfDonation: yup.string(),//.required(),
-    DonorPreference: yup.string(),//.required()
+    InkindItem: yup.string().required(),
+    BudgetedFromDonation: yup.number().required().min(0),
+    UnBudgetedFromDonation: yup.number().required().min(0),
+    DonationReason: yup.string().required(),
+    DonationAdditionalNotes: yup.string().required(),
+    SpecialDayDate: yup.string().required(),
+    PurposeOfDonation: yup.string().required(),
+    DonorPreference: yup.string().required()
 });
 
-let imagePath = null;
-
-const defaultImg = require('../assets/person.png');
 
 export default class AddDonor extends React.Component{
 
@@ -90,29 +87,19 @@ export default class AddDonor extends React.Component{
 //        let purposeofdonationdata =[{'PurposeOfDonationId' : 1, 'PurposeOfDonation': 'General'},{'PurposeOfDonationId' : 2, 'PurposeOfDonation': 'Education'},{'PurposeOfDonationId' : 3, 'PurposeOfDonation': 'Health'},{'PurposeOfDonationId' : 4, 'PurposeOfDonation': 'Sports'}]
 //        this.setState({purposeofdonation: purposeofdonationdata})
 
-        getDataAsync(base_url + '/donationReason')
+        getDataAsync(base_url + '/donationPurpose')
                         .then(data => {
-                            let donationReasonData = []
+                            let donationPurposeData = []
                             for(let i = 0; i < data.length; i++){
-                                donationReasonData.push({
-                                          'PurposeOfDonationId': data[i].donationReasonId,
-                                          'PurposeOfDonation': data[i].donationReasonName,
+                                donationPurposeData.push({
+                                          'PurposeOfDonationId': data[i].id,
+                                          'PurposeOfDonation': data[i].purposeName,
                                         });
                             }
-                             this.setState({purposeofdonation: donationReasonData})
+                             this.setState({purposeofdonation: donationPurposeData})
                          })
     }
 
-    loadStats(){
-        getDataAsync(base_url + '/dashboard/' + getOrgId())
-            .then(data => {
-                let stats = [] 
-                for(let i = 0; i < data.length; i++){
-                    stats.push([data[i].statusValue, data[i].total])
-                }
-                this.props.navigation.state.params.updateStats(stats)
-             })
-    }
 
     modalclickOKSuccess = () => {
         this.props.navigation.goBack();
@@ -140,9 +127,11 @@ export default class AddDonor extends React.Component{
 
     _alertUser() {
         const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
+        console.log("Alert")
         if(donorDetails.fromSearchFlag === false) {
-            Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('AddDonor', {reset: true})}],
+            Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('AddDonor')}],
             {cancelable: false},);
+            return
         }
         Alert.alert("Success", "Donation Added Successfully", [{ text: "OK" , onPress: () => this.props.navigation.navigate('SearchDonor')}],
         {cancelable: false},);
@@ -162,6 +151,7 @@ export default class AddDonor extends React.Component{
         console.log(value);
         handleChange(value);
     }
+
     async _submitContributionForm(values){
         console.log("submitcontribution called");
         const contributionPage1 = JSON.parse(this.props.navigation.state.params.contributionPage1)
@@ -194,7 +184,7 @@ export default class AddDonor extends React.Component{
         console.log(contribution_request_body)
 
 
-        fetch(base_url+"/createContribution", {
+        const response = await fetch(base_url+"/createContribution", {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -203,27 +193,26 @@ export default class AddDonor extends React.Component{
             },
             body: contribution_request_body,
         })
-        .then((response) =>{
-            if(response.ok) {
-                console.log(response.json)
-            }
-            else {
-                console.log("failed")
-            }
-        })
-        .catch((error) => {
-            this.setState({submitAlertMessage: 'Unable to add contribution. Plesae contact the Admin.'});
-            Alert.alert(
-                'Failed To Add contribution',
-                this.state.submitAlertMessage,
-                [
-                    { text: 'OK', onPress: () => console.log("Failed to add contribution") },
-                ],
-                { cancelable: false },
-            );
-            this.setState({isVisible: true, errorDisplay: true});
-            this.setState({showLoader: false,loaderIndex:0});
-        });       
+        // if(response.ok) {
+        //     console.log(response.json)
+        // }
+        // else {
+        //     console.log("failed")
+        // }
+        // .catch((error) => {
+        //     this.setState({submitAlertMessage: 'Unable to add contribution. Plesae contact the Admin.'});
+        //     Alert.alert(
+        //         'Failed To Add contribution',
+        //         this.state.submitAlertMessage,
+        //         [
+        //             { text: 'OK', onPress: () => console.log("Failed to add contribution") },
+        //         ],
+        //         { cancelable: false },
+        //     );
+        //     this.setState({isVisible: true, errorDisplay: true});
+        //     this.setState({showLoader: false,loaderIndex:0});
+        // });       
+        return response;
     }
 
     async _submitAddDonorForm(values) {
@@ -249,7 +238,7 @@ export default class AddDonor extends React.Component{
         });
         console.log(donor_request_body)
 
-        await fetch(base_url+"/sponsors/createSponsor", {
+        const response = await fetch(base_url+"/sponsors/createSponsor", {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -258,32 +247,16 @@ export default class AddDonor extends React.Component{
             },
             body: donor_request_body,
         })
-        .then((response) =>{
-            if(response.ok) {
-                response.json().then((responseJson) => {
-                    console.log(responseJson)
-                    this.setState({sponsorId: responseJson.sponsorId})
-                    console.log("Donor Created with sponsorId:", this.state.sponsorId)
-                })
-            }
-            else {
-                console.log("failed")
-            }
-        })
-        .catch((error) => {
-            this.setState({submitAlertMessage: 'Unable to add donor. Please contact the Admin.'});
-            Alert.alert(
-                'Failed To Add donor',
-                this.state.submitAlertMessage,
-                [
-                    { text: 'OK', onPress: () => console.log("Failed to add donor") },
-                ],
-                { cancelable: false },
-            );
-            this.setState({isVisible: true, errorDisplay: true});
-            this.setState({showLoader: false,loaderIndex:0});
-        });
-
+        if(response.ok) {
+            const responseJson = await response.json()
+            this.setState({sponsorId: responseJson.sponsorId})
+            console.log("Donor Created with sponsorId:", this.state.sponsorId)
+        }
+        else {
+            console.log("failed")
+        }
+        
+        return response;
     }
 
     render() {
@@ -321,16 +294,14 @@ export default class AddDonor extends React.Component{
                     const donorDetails = JSON.parse(this.props.navigation.state.params.donorDetails)
                     if(donorDetails.fromSearchFlag === false) {
                         console.log("Creating Donor")
-                        let result = await this._submitAddDonorForm(values);
-                        console.log(result);
+                        await this._submitAddDonorForm(values);
                     }else {
                         this.setState({sponsorId: donorDetails.sponsorNo})
                     }
-                    let res = await this._submitContributionForm(values);
-                    console.log(res);
+                    await this._submitContributionForm(values);
                     let alertMessage = this.state.submitAlertMessage;
                     this.setState({submitButtonDisabled: false});
-                    this._alertUser()
+                    await this._alertUser()
                 }}
                 >
                     {props => (
@@ -424,7 +395,7 @@ export default class AddDonor extends React.Component{
                                 <Text style = {globalStyles.label}>Special Day Date<Text style={{color:"red"}}>*</Text> :</Text>
                                 <View style={globalStyles.dobView}>
                                     <TextInput
-                                        style = {globalStyles.inputText, globalStyles.dobValue}
+                                        style = {{...globalStyles.inputText, ...globalStyles.dobValue}}
                                         value = {this.state.specialdaydate}
                                         editable = {false}
                                         onValueChange = {props.handleChange('SpecialDayDate')}
@@ -438,7 +409,6 @@ export default class AddDonor extends React.Component{
                                     {this.state.showsdd && 
                                         <DateTimePicker
                                             style={{width: 200}}
-                                            mode="date" //The enum of date, datetime and time
                                             value={ new Date() }
                                             mode= { 'date' }
                                             onChange= {(e,date) => this._pickSdd(e,date,props.handleChange('SpecialDayDate'))} 
@@ -467,15 +437,7 @@ export default class AddDonor extends React.Component{
                                                                                                 
                                 {/* Donor Preference */}
                                 <Text style = {globalStyles.label}>Donor Preference <Text style={{color:"red"}}>*</Text> :</Text>
-                                {/* <Picker
-                                    selectedValue = {props.values.Gender}
-                                    onValueChange = {props.handleChange('Gender')}
-                                    style = {globalStyles.dropDown}
-                                >
-                                    <Picker.Item label='Select Gender' value = ''/>
-                                    <Picker.Item label='Male' value = '1'/>
-                                    <Picker.Item label='Female' value = '2'/>
-                                </Picker> */}
+
                                 <RadioForm
                                         style={{marginLeft: 10}}
                                         radio_props={radio_props}

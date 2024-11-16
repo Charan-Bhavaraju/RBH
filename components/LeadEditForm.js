@@ -1,65 +1,170 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, TextInput, Picker } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Modal, TextInput, Picker, Button} from 'react-native';
+import { TouchableHighlight } from 'react-native-gesture-handler';
+import Feather from 'react-native-vector-icons/Feather';
 import { FontAwesome } from '@expo/vector-icons'; // For icons like phone, location, etc.
-import { withNavigation } from 'react-navigation'; // For navigation props
+import {Formik} from 'formik';
+import {globalStyles} from '../styles/global';
+import base64 from 'react-native-base64';
+import {getPassword, getUserName} from '../constants/LoginConstant';
+import {base_url, getDataAsync} from '../constants/Base';
+import * as yup from 'yup';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import moment from 'moment';
+import { getUserId } from '../constants/LoginConstant';
+
+
+
+const FollowUpSchema = yup.object({
+    FollowUpDate : yup.string(),
+    modeId: yup.string(),//.required(),
+    assignedTo: yup.string(),//.required(),
+    Remarks: yup.string(),//.required(),
+});
 
 class LeadEditForm extends Component {
     state = {
-        followUps: [
-            { id: 1, label: 'Follow up 1', date: '28/08/2024' },
-            { id: 2, label: 'Follow up 2', date: '28/09/2024' },
-        ],
+        // followUps: [
+        //     { id: 1, label: 'Follow up 1', followUpDate: '28/08/2024' },
+        //     { id: 2, label: 'Follow up 2', followUpDate: '28/09/2024' },
+        // ],
+        followUps: [],
         isModalVisible: false,
+        leadDonationDetails : '',
+        assignedTos : [],
+        modes: [],
+        followUpDate: `${moment(new Date()).format('YYYY-MM-DD')}`,
+        showDatePicker: false,
         isEditing: false,  // Track if editing or adding
         currentFollowUpId: null,  // To store the ID of the follow-up being edited
         newFollowUp: {
             assignedTo: '',
-            date: '',
-            mode: '',
+            followUpDate: '',
+            modeId: '',
             remarks: '',
         },
     };
 
     toggleModal = (followUp) => {
-        this.setState((prevState) => ({
-            isModalVisible: !prevState.isModalVisible,
-            newFollowUp: followUp ? { ...followUp } : { assignedTo: '', date: '', mode: '', remarks: '' }, // Reset form when closing
+        this.setState({
+            isModalVisible: !this.state.isModalVisible,
+            newFollowUp: followUp ? { ...followUp } : { assignedTo: '', followUpDate: '', modeId: '', remarks: '' }, // Reset form when closing
             isEditing: !!followUp, // Set editing mode if followUp is provided
             currentFollowUpId: followUp ? followUp.id : null,
-        }));
+        });
     };
 
-    handleSaveFollowUp = () => {
+    handleConvertToDonor = () => {
+        this.props.navigation.navigate('LeadContribution', {leadNo: this.props.navigation.state.params.leadNo, fromSearch: this.props.navigation.state.params.fromSearch});
+    }
+    async addLeadConstants(){
+
+        getDataAsync(base_url + '/follow-up-mode')
+        .then(data => {
+            let modeData = []
+            for(let i = 0; i < data.length; i++){
+                modeData.push({
+                          'id': data[i].followUpModeId,
+                          'mode': data[i].followUpModeName,
+                        });
+            }
+             this.setState({modes: modeData})
+         })
+
+         getDataAsync(base_url + '/get-assigned-to/'+getUserId())
+         .then(data => {
+             let assignedTosdata = []
+             for(let i = 0; i < data.length; i++){
+                 assignedTosdata.push({
+                           'id': data[i].userId,
+                           'assignedTo': data[i].userName,
+                         });
+             }
+              this.setState({assignedTos: assignedTosdata})
+          })
+ 
+        getDataAsync(base_url + '/get-follow-up/'+this.props.navigation.state.params.leadNo)
+        .then(data => {
+            let followUpData = []
+            for(let i = 0; i < data.length; i++){
+                followUpData.push({
+                          id: data[i].followUpId,
+                          label: `Follow up ${i+1}`,
+                          followUpDate: data[i].followUpDate
+                        });
+            }
+             this.setState({followUps: followUpData})
+         })
+    }
+    componentDidMount() {
+        console.log("Mounting Data")
+        
+        this.setState({leadDonationDetails: this.props.navigation.state.params.leadDonationDetails})
+        console.log(this.props.navigation.state.params.leadDonationDetails)
+        console.log(this.state.leadDonationDetails)
+        // if (this.state.leadDonationDetails === ""){
+        //     const leadDonationDetailss = JSON.parse(this.props.navigation.state.params.leadDonationDetails)
+        //     this.setState({leadDonationDetails: leadDonationDetailss})
+
+        // }
+        this.addLeadConstants();
+    }
+
+    async _submitAddLeadFollowupForm() {
+        console.log("submit followup called");
+        const { newFollowUp } = this.state;
+        newFollowUp['followUpDate'] = this.state.followUpDate;
+        let request_body = JSON.stringify( { ...newFollowUp, leadNo:this.props.navigation.state.params.leadNo });
+        console.log(request_body);
+
+        const response = await fetch(base_url+"/add-followup", {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + base64.encode(`${getUserName()}:${getPassword()}`)
+            },
+            body: request_body,
+        })
+        if(response.ok) {
+            const responseJson = await response.json()
+            console.log("Followup Created")
+        }
+        return response;
+    }
+
+    handleSaveFollowUp = async () => {
         const { followUps, newFollowUp, isEditing, currentFollowUpId } = this.state;
 
         if (isEditing) {
             // Edit existing follow-up
             const updatedFollowUps = followUps.map((followUp) =>
                 followUp.id === currentFollowUpId
-                    ? { ...followUp, date: newFollowUp.date, assignedTo: newFollowUp.assignedTo, mode: newFollowUp.mode, remarks: newFollowUp.remarks } // Update all fields
+                    ? { ...followUp, followUpDate: this.state.followUpDate, assignedTo: newFollowUp.assignedTo, modeId: newFollowUp.modeId, remarks: newFollowUp.remarks } // Update all fields
                     : followUp
             );
-
+            
             this.setState({
                 followUps: updatedFollowUps,
                 isModalVisible: false,
-                newFollowUp: { assignedTo: '', date: '', mode: '', remarks: '' }, // Reset form
+                newFollowUp: { assignedTo: '', followUpDate: '', modeId: '', remarks: '' }, // Reset form
             });
         } else {
             // Add new follow-up
+            await this._submitAddLeadFollowupForm()
             const updatedFollowUps = [
                 ...followUps,
                 {
-                    id: followUps.length + 1,
+                    id: followUps.length + 10,
                     label: `Follow up ${followUps.length + 1}`,
-                    date: newFollowUp.date,
+                    followUpDate: this.state.followUpDate,
                 },
             ];
-
+            
             this.setState({
                 followUps: updatedFollowUps,
                 isModalVisible: false,
-                newFollowUp: { assignedTo: '', date: '', mode: '', remarks: '' }, // Reset form
+                newFollowUp: { assignedTo: '', followUpDate: '', modeId: '', remarks: '' }, // Reset form
             });
         }
     };
@@ -70,34 +175,65 @@ class LeadEditForm extends Component {
         });
     };
 
+    _pickDate = (event,date,handleChange) => {
+        if(event["type"] == "dismissed") {
+
+        }
+        else {
+            let a = moment(date).format('YYYY-MM-DD');
+            this.setState({followUpDate:a, showDatePicker: false});
+            handleChange(a);
+        }
+    }
+
+    // Show date picker
+    showDatepicker = () => {
+        this.setState({ showDatePicker: true });
+    };
+
+
     render() {
         const { followUps, isModalVisible, newFollowUp } = this.state;
 
         return (
+            <View style = {globalStyles.container}>
+                
+            <Formik
+            initialValues = {
+                {
+                    FollowUpDate: this.state.followUpDate,
+                    modeId: '',
+                    Remarks: '',
+                    assignedTo: ""
+                }
+            }
+            validationSchema = {FollowUpSchema}
+            >
+            {props => (
             <ScrollView contentContainerStyle={styles.container}>
                 {/* Lead Details */}
                 <View style={styles.leadDetails}>
                     <View style={styles.leadHeaderContainer}>
                         <Text style={styles.leadDetailsTitle}>Lead Details</Text>
                         <View style={styles.leadNoContainer}>
-                            <Text style={styles.leadNo}>Lead No.: Code_E-0120</Text>
+                            <Text style={styles.leadNo}>Lead No.: {this.props.navigation.state.params.leadNo}</Text>
                         </View>
                     </View>
-                    <Text style={styles.leadSubText}>Lead was brought by Mr. Parth Sanghi</Text>
+                    <Text style={styles.leadSubText}>Lead was brought by {getUserName()}</Text>
 
                     {/* Organization Card */}
                     <View style={styles.orgCard}>
                         <View style={styles.orgHeader}>
-                            <Text style={styles.orgName}>Organization Name</Text>
+                            <Text style={styles.orgName}>{this.state.leadDonationDetails.organisationName}</Text>
                             <View style={styles.statusBadge}>
                                 <Text style={styles.statusText}>In Progress</Text>
                             </View>
                         </View>
-                        <Text style={styles.orgDetails}>Org Type: Company | Org Region: Local</Text>
+                        <Text style={styles.orgDetails}>Org Region: {this.state.leadDonationDetails.organisationRegion}</Text>
                         <Text style={styles.orgAddress}>
-                            Org Address
+                            {this.state.leadDonationDetails.address}
                         </Text>
-                        <Text style={styles.orgPhone}>+91-Org Contact Number</Text>
+                        <Text style={styles.orgPhone}>{this.state.leadDonationDetails.orgContactNumber}</Text>
                     </View>
                 </View>
 
@@ -113,11 +249,11 @@ class LeadEditForm extends Component {
                         <TouchableOpacity
                             style={styles.followUpItem}
                             key={followUp.id}
-                            onPress={() => this.toggleModal(followUp)} // Open modal with follow-up details for editing
+                            // onPress={() => this.toggleModal(followUp)} // Open modal with follow-up details for editing
                         >
                             <View style={styles.followUpLabelContainer}>
                                 <Text style={styles.followUpLabel}>{followUp.label}</Text>
-                                <Text style={styles.followUpDate}>{followUp.date}</Text>
+                                <Text style={styles.followUpDate}>{followUp.followUpDate}</Text>
                             </View>
                             <FontAwesome name="chevron-right" size={16} color="#888" style={styles.arrowIcon} />
                         </TouchableOpacity>
@@ -125,7 +261,7 @@ class LeadEditForm extends Component {
                 </View>
 
                 {/* Convert to Donor Button */}
-                <TouchableOpacity style={styles.convertButton}>
+                <TouchableOpacity style={styles.convertButton} onPress={this.handleConvertToDonor}>
                     <Text style={styles.convertButtonText}>CONVERT TO DONOR</Text>
                 </TouchableOpacity>
 
@@ -138,36 +274,34 @@ class LeadEditForm extends Component {
                             <View style={styles.inputContainer}>
                                 <Text>Assigned to</Text>
                                 <Picker
-                                    selectedValue={newFollowUp.assignedTo}
-                                    style={styles.input}
-                                    onValueChange={(itemValue) => this.handleInputChange('assignedTo', itemValue)}
+                                    selectedValue = {newFollowUp.assignedTo}
+                                    onValueChange = {(itemValue) => this.handleInputChange('assignedTo', itemValue)}
+                                    style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label="Person Name(s)" value="" />
-                                    <Picker.Item label="John Doe" value="John Doe" />
-                                    <Picker.Item label="Jane Smith" value="Jane Smith" />
+                                    <Picker.Item label='Assigned To' color='grey' value = ''/>
+                                    { 
+                                        this.state.assignedTos.map((item) => {
+                                            return <Picker.Item key = {item.id} label = {item.assignedTo} value = {item.id}/>
+                                        })
+                                    }
                                 </Picker>
                             </View>
 
-                            <View style={styles.inputContainer}>
-                                <Text>Follow Up Date</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={newFollowUp.date}
-                                    placeholder="Select Date"
-                                    onChangeText={(value) => this.handleInputChange('date', value)}
-                                />
-                            </View>
+
 
                             <View style={styles.inputContainer}>
                                 <Text>Mode</Text>
                                 <Picker
-                                    selectedValue={newFollowUp.mode}
-                                    style={styles.input}
-                                    onValueChange={(itemValue) => this.handleInputChange('mode', itemValue)}
+                                    selectedValue = {newFollowUp.modeId}
+                                    onValueChange = {(itemValue) => this.handleInputChange('modeId', itemValue)}
+                                    style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label="Mode" value="" />
-                                    <Picker.Item label="Call" value="Call" />
-                                    <Picker.Item label="Email" value="Email" />
+                                    <Picker.Item label='Mode' color='grey' value = ''/>
+                                    { 
+                                        this.state.modes.map((item) => {
+                                            return <Picker.Item key = {item.id} label = {item.mode} value = {item.id}/>
+                                        })
+                                    }
                                 </Picker>
                             </View>
 
@@ -182,6 +316,30 @@ class LeadEditForm extends Component {
                                 />
                             </View>
 
+                                <Text>Follow Up Date</Text>
+                            <View style={{...styles.inputContainer, flexDirection: 'row', justifyContent: 'space-between' }}>
+
+                                <View style={globalStyles.dobView}>
+                                    <TextInput
+                                        style = {{...styles.input, ...globalStyles.dobValue}}
+                                        value = {`${moment(this.state.followUpDate).format('YYYY-MM-DD')}`}
+                                        editable = {false}
+                                        onValueChange = {(value) => this.handleInputChange('followUpDate', `${moment(this.state.followUpDate).format('YYYY-MM-DD')}`)} 
+                                    />
+                                    {/* Button to open the date picker */}
+                                    {this.state.showDatePicker && 
+                                        <DateTimePicker
+                                        style={{width: 200}}
+                                        mode="date" //The enum of date, datetime and time
+                                        value={new Date() }
+                                        onChange= {(e,date) => this._pickDate(e,date,props.handleChange('FollowUpDate'))} 
+                                        />
+                                    }
+                                </View>
+                                <Text style = {globalStyles.errormsg}>{props.touched.FollowUpDate && props.errors.FollowUpDate}</Text>
+
+                            </View>
+                                    <Button style={styles.dobButton} onPress={this.showDatepicker} title="Select Follow Up Date" />
                             {/* Modal Buttons */}
                             <View style={styles.modalButtonContainer}>
                                 <TouchableOpacity style={styles.cancelButton} onPress={this.toggleModal}>
@@ -195,6 +353,9 @@ class LeadEditForm extends Component {
                     </View>
                 </Modal>
             </ScrollView>
+            )}
+            </Formik>
+            </View>
         );
     }
 }
@@ -383,6 +544,12 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 5,
     },
+    dobButton: {
+        backgroundColor: '#E6E6FA',
+        borderRadius: 5,
+        margin: 3,
+        flex: 1,
+    },
     cancelButtonText: {
         color: '#fff',
         textAlign: 'center',
@@ -395,4 +562,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default withNavigation(LeadEditForm);
+export default LeadEditForm;

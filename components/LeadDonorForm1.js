@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import RadioForm from 'react-native-simple-radio-button';
 import {Button, Text, TextInput, View, Picker, ScrollView,
-    KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
+    KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity,Switch} from 'react-native';
 import {Formik} from 'formik';
 import {globalStyles} from '../styles/global';
 import * as yup from 'yup';
@@ -9,133 +9,127 @@ import {base_url,getDataAsync} from '../constants/Base';
 import { ActivityIndicator } from 'react-native';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 import { getSelectedDonor, setSelectedDonor } from '../constants/DonorConstants';
+import * as ImagePicker from 'expo-image-picker';
+import * as Permissions from 'expo-permissions';
 
+let imagePath = null;
 
 const AddDonorSchema = yup.object({
-    DonorID: yup.string(),
-    DonorName: yup.string(),//.required(),
-    DonorType: yup.string(),//.required(),
-    Source: yup.string(),//.required(),
-    PhoneNumber: yup.string(),//.required().length(10, 'Phonenumber must be 10 digits long'),
-//    Email: yup.string(),//.required().email('Please enter a valid email address'),
-    PAN: yup.string()//.required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
+    OrganisationName: yup.string().required(),
+    OrganisationType: yup.string().required(),
+    OrganisationRegion: yup.string().required(),
+    OrganisationAddress: yup.string().required(),
+    PhoneNumber:  yup.string().matches(/^[0-9]{10}$/, 'Enter 10 digit Phone number'),
 });
 
 export default class LeadDonor1 extends React.Component{
     constructor(props){
         super(props)
     this.state ={
-        fromSearchFlag: false, 
+        image : null,
         loaderIndex: 0,
         showLoader: false,
-        donortypes: [],
-        sources: [],
-        isVisible: false,
-        sucessDisplay: false,
-        errorDisplay: false,
+        organisationtypes: [],
+        organisationRegion : 0,
         pageOne: true,
-        pageTwo: true,
-        pageThree: true,
-        currentPage: 1,
         submitButtonDisabled: false,
-        donorDetails: "",
+        orgDetails: "",
         openSourceDropDown: false,
-        selectedDonorDetails: getSelectedDonor()
+        selectedDonorDetails: getSelectedDonor(),
+        isLogoAllowed : false
     };
     }
 
-    async addDonorConstants(){
-        console.log(this.state.selectedDonorDetails)
-        if(Object.keys(this.state.selectedDonorDetails).length !== 0){
-            // coming from search donor screen
-            console.log("coming from search screen")
-            this.setState({fromSearchFlag: true})
-            this.setState({donortypes: this.state.selectedDonorDetails.donorType})
-            let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-            this.setState({sources: sourcesdata})
-        }else {
-        console.log("coming from add donor screen")
-
-        getDataAsync(base_url + '/donorType')
+    async addLeadConstants(){
+        getDataAsync(base_url + '/lead-organisation-type')
                     .then(data => {
-                        let donorTypesData = []
+                        let orgTypesData = []
                         for(let i = 0; i < data.length; i++){
-                            donorTypesData.push({
+                            orgTypesData.push({
                                       'id': data[i].id,
-                                      'donorTypeName': data[i].donorTypeName,
+                                      'organisationType': data[i].leadOrgTypeName,
                                     });
                         }
-                         this.setState({donortypes: donorTypesData})
+                         this.setState({organisationtypes: orgTypesData})
                      })
 
+        // let orgtypedata =[{'id' : 1, 'organisationType': 'Company'},{'id' : 2, 'organisationType': 'Org/Trust'},{'id' : 3, 'organisationType': 'HNI'},{'id' : 4, 'organisationType': 'Family Foundation'},{'id' : 5, 'organisationType': 'Foundation'}]
+        // this.setState({organisationtypes: orgtypedata})
 
-        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-        this.setState({sources: sourcesdata})
-//        getDataAsync(base_url + '/donorType')
-//                            .then(data => {
-//                                let sourceData = []
-//                                for(let i = 0; i < data.length; i++){
-//                                    sourceData.push({
-//                                              'SourceId': data[i].id,
-//                                              'Source': data[i].donorTypeName,
-//                                            });
-//                                }
-//                                this.setState({sources: sourceData})
-//                             })
         }
+
+    _changeOrganisationRegion= (value, handleChange) => {
+        this.setState({organisationRegion: value});
+        console.log(value);
+        handleChange(value);
     }
-
-
 
     componentDidMount() {
         console.log('mounting component');
-        this.addDonorConstants();
+        this.addLeadConstants();
     }
 
+    async _pickImage (handleChange) {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+        if(status == 'granted'){
+            let result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.All,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 1
+            });
+            if (!result.cancelled) {
+                console.log("image uri")
+                this.setState({ image: result.uri });
+                imagePath = result.uri;
+                console.log(this.state.image);
+                handleChange(result.uri)
+            }
+        }
+    }
 
-    async _submitAddDonorForm(values) {
-        console.log("submitdonor called");
+    async _submitOrgDetailsForm(values) {
+        console.log("Organisation Details Captured");
         let request_body = JSON.stringify({
-            "DonorName": values.DonorName,
-            "DonorType": values.DonorType,
-            "Source": values.Source,
+            "OrganisationName": values.OrganisationName,
+            "OrganisationType": values.OrganisationType,
+            "OrganisationRegion": values.OrganisationRegion,
+            "OrganisationAddress": values.OrganisationAddress,
             "PhoneNumber": values.PhoneNumber,
-//            "Email": values.Email,
-            "PAN": values.PAN,
-            "fromSearchFlag": this.state.fromSearchFlag,
-            "sponsorNo": this.state.selectedDonorDetails.sponsorNo
+            "CompanyLogo": imagePath
         });
-        console.log(getUserName(), getPassword());
-        this.setState({donorDetails: request_body})
+        this.setState({orgDetails: request_body})
+        console.log(request_body)
     }
+
+    toggleSwitch = () => {
+        this.setState({ isLogoAllowed: !this.state.isLogoAllowed });
+      };
 
     render() {
           const radio_props = [
-                    { label: 'Local', value: '1' },
-                    { label: 'FCRA', value: '2' },
+                    { label: 'CSR', value: 'CSR' },
+                    { label: 'FCRA', value: 'FCRA' },
                 ];
+
         return (
             <View style = {globalStyles.container}>
                 <Formik
                 initialValues = {
                     {
-                        DonorID: '',
-                        DonorName: '',
-                        DonorType: '',
-                        Source: '',
+                        OrganisationName: '',
+                        OrganisationType: '',
+                        OrganisationRegion: 'CSR',
+                        OrganisationAddress: '',
                         PhoneNumber: '',
-//                        Email: '',
-                        PAN:''
                     }
                 }
                 validationSchema = {AddDonorSchema}
                 onSubmit = {async (values, actions) => {
-                    // this.setState({showLoader: true,loaderIndex:10});
                     this.setState({submitButtonDisabled: true});
-                    this._submitAddDonorForm(values);
-                    let alertMessage = this.state.submitAlertMessage;
+                    this._submitOrgDetailsForm(values);
                     this.setState({submitButtonDisabled: false});
-                    this.props.navigation.navigate('LeadDonor2', {donorDetails: this.state.donorDetails});
+                    this.props.navigation.navigate('LeadDonor2', {orgDetails: this.state.orgDetails});
                 }}
                 >
                     {props => (
@@ -149,66 +143,52 @@ export default class LeadDonor1 extends React.Component{
                             <View style= {globalStyles.topView}>
                                 {this.state.pageOne && <View>
                                     <View style={globalStyles.backgroundlogoimageview}>
-                                        <Image source = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
+                                        <Image organisationType = {require("../assets/RBHlogoicon.png")} style={globalStyles.backgroundlogoimage}/>
                                     </View>
                                 
                                 <View style={globalStyles.PageHeaderView}>
                                     <Text style={globalStyles.PageHeader}></Text>
                                 </View>
 
-                                {/* Organization Name */}
+                                <Text style={globalStyles.headerText}>Organisation Details</Text>
 
-                                { this.state.fromSearchFlag ===false ?
+                                {/* Organisation Name */}
+
+                                <Text style = {globalStyles.label}>Organisation Name <Text style={{color:"red"}}>*</Text> :</Text>
                                 <TextInput
                                     style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('DonorName')}
+                                    onChangeText = {props.handleChange('OrganisationName')}
                                     value = {props.values.DonorName}
-                                    placeholder="Organization Name"
-                                />
-                                :
-                                <TextInput
-                                style = {globalStyles.inputText}
-                                value={this.state.selectedDonorDetails.sponsorName}
-                                editable={false}
-                                selectTextOnFocus={false}
-                                />          
-                                }                                
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonorName && props.errors.DonorName}</Text>
+                                    placeholder="Organisation Name"
+                                />       
+                                <Text style = {globalStyles.errormsg}>{props.touched.OrganisationName && props.errors.OrganisationName}</Text>
 
 
-                                {/* Organization Type */}
-                                <Text style = {globalStyles.label}>Organization Type <Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.fromSearchFlag ===false ?
+                                {/* Organisation Type */}
+                                <Text style = {globalStyles.label}>Organisation Type <Text style={{color:"red"}}>*</Text> :</Text>
                                 <Picker
-                                    selectedValue = {props.values.DonorType}
+                                    selectedValue = {props.values.OrganisationType}
                                     onValueChange = {value => {
-                                        props.setFieldValue('DonorType', value);
+                                        props.setFieldValue('OrganisationType', value);
                                     }}
                                     style = {globalStyles.dropDown}
                                 >
-                                    <Picker.Item label='Organization Type' color='grey' value = ''/>
+                                    <Picker.Item label='Organisation Type' color='grey' value = ''/>
                                     { 
-                                        this.state.donortypes.map((item) => {
-                                            return <Picker.Item key = {item.id} label = {item.donorTypeName} value = {item.id}/>
+                                        this.state.organisationtypes.map((item) => {
+                                            return <Picker.Item key = {item.id} label = {item.organisationType} value = {item.id}/>
                                         })
                                     }
                                 </Picker>
-                                :
-                                <TextInput
-                                    style = {globalStyles.inputText}
-                                    value={this.state.donortypes.donorTypeName}
-                                    editable={false}
-                                    selectTextOnFocus={false}
-                                    />          
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.DonorType && props.errors.DonorType}</Text>
+                                <Text style = {globalStyles.errormsg}>{props.touched.OrganisationType && props.errors.OrganisationType}</Text>
                                 
-                                {/* Organization Region */}
-                                <Text style={globalStyles.label}>Organization Region <Text style={{ color: "red" }}></Text></Text>
+                                {/* Organisation Region */}
+                                <Text style = {globalStyles.label}>Organisation Region <Text style={{color:"red"}}>*</Text> :</Text>
+
 
                                 <RadioForm
 
-                                style={{ marginLeft: 10, marginTop: 10 }}
+                                style={{ marginLeft: 10, marginTop: 10, marginBottom: 10 }}
                                 radio_props={radio_props}
                                 buttonSize={10}
                                 formHorizontal={true}
@@ -217,60 +197,107 @@ export default class LeadDonor1 extends React.Component{
                                 buttonInnerColor={'black'}
                                 selectedButtonColor={'blue'}
                                 labelStyle={{ marginRight: 20 }}
-                                onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
+                                onPress={value => this._changeOrganisationRegion(value, props.handleChange('OrganisationRegion'))}
                                             />
+                                <Text style = {globalStyles.errormsg}>{props.touched.OrganisationRegion && props.errors.OrganisationRegion}</Text>
+                                
 
-                                {/* Email */}
-                                <Text style = {globalStyles.label}>Organization Address <Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.fromSearchFlag ===false ?
+                                {/* Organisation Address */}
+                                <Text style = {globalStyles.label}>Organisation Address <Text style={{color:"red"}}>*</Text> :</Text>
                                 <TextInput
                                     style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('Email')}
-                                    value = {props.values.Email}
+                                    onChangeText = {props.handleChange('OrganisationAddress')}
+                                    value = {props.values.OrganisationAddress}
                                     placeholder='Address'
                                     multiline={true}
-                                    numberOfLines={4}
+                                    numberOfLines={2}
                                 />
-                                :
-                                <TextInput
-                                style = {globalStyles.inputText}
-                                value={this.state.selectedDonorDetails.emailId}
-                                editable={false}
-                                selectTextOnFocus={false}
-                                />
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.Email && props.errors.Email}</Text>
+                                <Text style = {globalStyles.errormsg}>{props.touched.OrganisationAddress && props.errors.OrganisationAddress}</Text>
 
                                 {/* Phone Number */}
                                 <Text style = {globalStyles.label}> Phone Number <Text style={{color:"red"}}>*</Text> :</Text>
-                                { this.state.fromSearchFlag ===false ?
                                 <TextInput
+                                    keyboardType="numeric"
                                     style = {globalStyles.inputText}
-                                    onChangeText = {props.handleChange('PAN')}
-                                    value = {props.values.PAN}
-                                    placeholder='Phone Number'
-                                    autoCapitalize="characters" 
+                                    onChangeText = {props.handleChange('PhoneNumber')}
+                                    value = {props.values.PhoneNumber}
+                                    placeholder="Phone Number"
                                 />
-                                : 
-                                <TextInput
-                                style = {globalStyles.inputText}
-                                value={this.state.selectedDonorDetails.panNumber}
-                                editable={false}
-                                selectTextOnFocus={false}
-                                />          
-                                }
-                                <Text style = {globalStyles.errormsg}>{props.touched.PAN && props.errors.PAN}</Text>
-                                                                                                  
-                                <Button style = {globalStyles.button} title= { this.state.fromSearchFlag ===false ? "Next":"Continue"} onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
+                                <Text style = {globalStyles.errormsg}>{props.touched.PhoneNumber && props.errors.PhoneNumber}</Text>
+
+                                {/* Company Logo */}
+                                {/* Toggle Switch */}
+                                <View style={styles.switchContainer}>
+                                <Text style={styles.label}>Can company logo be used</Text>
+                                <Switch
+                                    value={this.state.isLogoAllowed}
+                                    onValueChange={this.toggleSwitch}
+                                    thumbColor={this.state.isLogoAllowed ? '#fff' : '#f4f3f4'}
+                                    trackColor={{ false: '#767577', true: '#007AFF' }} // Blue color for active switch
+                                />    
+                                </View>    
+
+                                {/* Conditional Rendering for Logo Upload Section */}
+                                {this.state.isLogoAllowed && (
+                                <View>
+                                <Image source={{ uri: this.state.image }} style={globalStyles.uploadImage}/>
+
+                                <Button title="Upload Photo" onPress={() => this._pickImage(props.handleChange('CompanyPhoto'))} />
+                                <Text style = {globalStyles.errormsg}>{props.touched.CompanyPhoto && props.errors.CompanyPhoto}</Text>
+                                </View>    
+
+                                )}
+
+
+                                <Button style = {globalStyles.button} title= "Next" onPress={props.handleSubmit} disabled={this.state.submitButtonDisabled}/>
+                                
+                                
                                 </View>}
                             </View>
                         </ScrollView>  
                         </KeyboardAvoidingView>
                                                   
                     )}
-
                 </Formik>
             </View>
         );
     }
 }
+
+
+const styles = StyleSheet.create({
+    container: {
+      padding: 20,
+    },
+    switchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 20,
+    },
+    label: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    uploadContainer: {
+      alignItems: 'flex-start',
+    },
+    uploadBox: {
+      width: 100,
+      height: 100,
+      borderWidth: 1,
+      borderColor: '#007AFF',
+      borderStyle: 'dashed',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 5,
+    },
+    plusSign: {
+      fontSize: 30,
+      color: '#007AFF',
+    },
+    uploadText: {
+      fontSize: 14,
+      color: '#007AFF',
+    },
+  });

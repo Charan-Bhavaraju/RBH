@@ -13,12 +13,12 @@ import { getSelectedDonor, setSelectedDonor } from '../constants/DonorConstants'
 
 const AddDonorSchema = yup.object({
     DonorID: yup.string(),
-    DonorName: yup.string(),//.required(),
-    DonorType: yup.string(),//.required(),
-    Source: yup.string(),//.required(),
-    PhoneNumber: yup.string(),//.required().length(10, 'Phonenumber must be 10 digits long'),
-    Email: yup.string(),//.required().email('Please enter a valid email address'),
-    PAN: yup.string()//.required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
+    DonorName: yup.string().required(),
+    DonorType: yup.string().required(),
+    Source: yup.string().required(),
+    PhoneNumber: yup.string().required().length(10, 'Phonenumber must be 10 digits long'),
+    Email: yup.string().required().email('Please enter a valid email address'),
+    PAN: yup.string().required().matches(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN card format')
 });
 
 export default class AddDonor extends React.Component{
@@ -52,7 +52,7 @@ export default class AddDonor extends React.Component{
             this.setState({fromSearchFlag: true})
             this.setState({donortypes: this.state.selectedDonorDetails.donorType})
             let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-            this.setState({sources: sourcesdata})
+            this.setState({sources: this.state.selectedDonorDetails.donorSource})
         }else {
         console.log("coming from add donor screen")
 
@@ -69,19 +69,17 @@ export default class AddDonor extends React.Component{
                      })
 
 
-        let sourcesdata =[{'SourceId' : 1, 'Source': 'City'},{'SourceId' : 2, 'Source': 'Government'},{'SourceId' : 3, 'Source': 'State'},{'SourceId' : 4, 'Source': 'Home'},{'SourceId' : 5, 'Source': 'Organization'},{'SourceId' : 6, 'Source': 'Individual'}]
-        this.setState({sources: sourcesdata})
-//        getDataAsync(base_url + '/donorType')
-//                            .then(data => {
-//                                let sourceData = []
-//                                for(let i = 0; i < data.length; i++){
-//                                    sourceData.push({
-//                                              'SourceId': data[i].id,
-//                                              'Source': data[i].donorTypeName,
-//                                            });
-//                                }
-//                                this.setState({sources: sourceData})
-//                             })
+        getDataAsync(base_url + '/sponsors/donorSource')
+                            .then(data => {
+                                    let sourceData = []
+                                    for(let i = 0; i < data.length; i++){
+                                            sourceData.push({
+                                                            'SourceId': data[i].donorSourceId,
+                                                            'Source': data[i].donorSourceName,
+                                                        });
+                                            }
+                                            this.setState({sources: sourceData})
+                                        })
         }
     }
 
@@ -152,7 +150,7 @@ export default class AddDonor extends React.Component{
                         PAN:''
                     }
                 }
-                validationSchema = {AddDonorSchema}
+                validationSchema = {this.state.fromSearchFlag === false ?AddDonorSchema: null }
                 onSubmit = {async (values, actions) => {
                     // this.setState({showLoader: true,loaderIndex:10});
                     this.setState({submitButtonDisabled: true});
@@ -177,7 +175,7 @@ export default class AddDonor extends React.Component{
                                     </View>
                                 
                                 <View style={globalStyles.PageHeaderView}>
-                                    <Text style={globalStyles.PageHeader}>Add New Donor</Text>
+                                    <Text style={globalStyles.PageHeader}>{ this.state.fromSearchFlag ===false ? "Add New Donor":"Donor Details"}</Text>
                                 </View>
 
                                 {/* Donor Name */}
@@ -249,7 +247,7 @@ export default class AddDonor extends React.Component{
                                 :
                                 <TextInput
                                 style = {globalStyles.inputText}
-                                value={this.state.sources}
+                                value={this.state.sources.donorSourceName}
                                 editable={false}
                                 selectTextOnFocus={false}
                                 />          

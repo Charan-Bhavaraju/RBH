@@ -5,12 +5,20 @@ import RadioForm from 'react-native-simple-radio-button';
 import { base_url } from '../constants/Base';
 import { getOrgId, getHomeCode } from '../constants/LoginConstant';
 import { setSelectedDonor } from '../constants/DonorConstants';
+import Icon from 'react-native-vector-icons/Feather';
+import {globalStyles} from '../styles/global';
+
 
 export default class SearchDonor extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
     state = {
         showLoader: false,
         searchType: 1,
         donorsList: [],
+        searchClicked:false,
         submitButtonDisabled: true,
         selectedDonor: null, // State to store selected donor
     };
@@ -21,6 +29,7 @@ export default class SearchDonor extends React.Component {
         // Check if the input is numeric (for donor ID or phone number) or alphabetic (for name)
         const isNumeric = /^\d+$/.test(inputDonor);
         const isAlphabetic = /^[A-Za-z\s]+$/.test(inputDonor);
+        this.state.searchClicked = true
 
         if (isAlphabetic && inputDonor.length < 3) {
             this.setState({ donorsList: [], submitButtonDisabled: true });
@@ -33,15 +42,18 @@ export default class SearchDonor extends React.Component {
         }
 
         this.setState({ showLoader: true, submitButtonDisabled: true });
-
+        // console.log(inputDonor)
         try {
             // Determine the endpoint based on searchType
             let endpoint = '';
             if (this.state.searchType == 1) {
                 endpoint = 'sponsors/donor';
-            } else if (this.state.searchType == 2 || this.state.searchType == 3) {
+            } else if (this.state.searchType == 2 ) {
                 endpoint = 'get-lead';
+            } else if (this.state.searchType == 3) {
+                endpoint = 'get-converted-lead';
             }
+            
 
             const searchUrl = `${base_url}/${endpoint}?search=${inputDonor}`;
             let result = await fetch(searchUrl);
@@ -69,14 +81,10 @@ export default class SearchDonor extends React.Component {
             donorsList: [],        // Clear search results
             selectedDonor: null,   // Clear selected donor
             submitButtonDisabled: true // Disable the submit button
-        }, () => {
-            handleChange(value); // Update the formik value for search type
-        });
+        })
+        console.log(value)
+        handleChange(value); // Update the formik value for search type
     };
-
-
-    
-    
 
     // Store selected donor in state and clear the donor list
     selectDonor = (donor, setFieldValue) => {
@@ -112,13 +120,6 @@ export default class SearchDonor extends React.Component {
         }
     };
     
-
-    componentDidMount() {
-        const orgId = getOrgId();
-        const homeCode = getHomeCode();
-        this.setState({ orgid: orgId, homecode: homeCode });
-    }
-
     render() {
         const radio_props = [
             { label: 'Individual', value: '1' },
@@ -127,7 +128,7 @@ export default class SearchDonor extends React.Component {
         ];
 
         return (
-            <View style={styles.fullScreenContainer}>
+            <View  style = {globalStyles.container}>
                 <Formik
                     initialValues={{
                         DonorName: '',
@@ -152,8 +153,43 @@ export default class SearchDonor extends React.Component {
                             willingToSupport: '',
                         } : {})
                     }}
-                >
-                    {({ handleChange, setFieldValue, values }) => (
+                    onSubmit = {async (values, actions) => { 
+                        if (this.state.searchType == 2 ) { // Lead or Corporate Donation
+                            console.log("Navigating to Edit lead",this.state.selectedDonor)
+                            this.props.navigation.navigate('LeadEdit', {
+                                navigation: this.props.navigation,
+                                leadDonationDetails: this.state.selectedDonor,
+                                leadNo: this.state.selectedDonor['leadNo'],
+                                formikValues: values,
+                                fromSearch: true
+                            });
+                            return
+                        } 
+                        else if (this.state.searchType == 3) { // Lead or Corporate Donation
+                            console.log("Navigating to lead contribution",this.state.selectedDonor)
+                            this.props.navigation.navigate('LeadContribution', {
+                                navigation: this.props.navigation,
+                                leadDonationDetails: this.state.selectedDonor,
+                                leadNo: this.state.selectedDonor['leadNo'],
+                                formikValues: values,
+                                fromSearch: true
+                            });
+                            return
+                        } 
+                        else {
+                            console.log("Navigating to Donor", this.state.selectedDonor)
+                            setSelectedDonor(this.state.selectedDonor); // Store the selected donor
+
+                            // Individual Donor case
+                            this.props.navigation.navigate('AddDonor', {
+                                navigation: this.props.navigation,
+                                selectedDonor: this.state.selectedDonor,
+                                formikValues: values,
+                            });
+                        }
+                    }}
+                    >
+                    {props => (
                         <KeyboardAvoidingView behavior="padding" enabled style={styles.keyboardAvoid}>
                             <View style={{ position: 'absolute', top: '45%', right: 0, left: 0, zIndex: this.state.showLoader ? 1 : -1 }}>
                                 <ActivityIndicator animating={this.state.showLoader} size="large" color="red" />
@@ -177,44 +213,54 @@ export default class SearchDonor extends React.Component {
                                             buttonColor={'black'}
                                             buttonInnerColor={'black'}
                                             selectedButtonColor={'blue'}
-                                            onPress={value => this._changeSearchType(value, handleChange('SearchType'))}
+                                            onPress={value => this._changeSearchType(value, props.handleChange('SearchType'))}
                                         />
-                                        <TextInput
+          
+                                        {/* Search Input with Button */}
+                                        <View style={styles.searchContainer}>
+                                            <TextInput
                                             placeholder="Enter Donor name / Donor id / Phone number"
                                             style={styles.inputText}
-                                            onChangeText={searchInput => {
-                                                handleChange('DonorName')(searchInput);
-                                                this.fetchDonors(searchInput);
-                                            }}
-                                            value={values.DonorName}
-                                        />
+                                            onChangeText={props.handleChange('DonorName')}
+                                            value={props.values.DonorName}
+                                            />
+                                            <TouchableOpacity style={styles.searchButton} onPress={() => this.fetchDonors(props.values.DonorName)}>
+                                            <Icon name="search" size={20} color="white" />
+                                            </TouchableOpacity>
+                                        </View>
 
                                         {/* Donor List Display */}
                                         {this.state.donorsList.length > 0 ? (
                                             <>
                                                 {/* Display the search query above the results */}
                                                 <Text style={styles.searchResultsText}>
-                                                    Search results for: "{values.DonorName}"
+                                                    Search results for: "{props.values.DonorName}"
                                                 </Text>
                                                 {this.state.donorsList.map((item, index) => (
                                                     <TouchableOpacity
                                                         key={index}
                                                         style={[styles.donorItem, this.state.selectedDonor === item && styles.selectedDonorItem]}
-                                                        onPress={() => this.selectDonor(item, setFieldValue)}  // Clear results after selection
+                                                        onPress={() => this.selectDonor(item, props.setFieldValue)}  // Clear results after selection
                                                     >
+                                                        {this.state.searchType === 1 ? (
                                                         <Text style={styles.donorText}>
                                                             {item.sponsorName} (Sponsor No: {item.sponsorNo})
                                                         </Text>
+                                                        ) : 
+                                                        <Text style={styles.donorText}>
+                                                        {item.organisationName} (Sponsor No: {item.leadNo})
+                                                        </Text>
+                                                    }
                                                     </TouchableOpacity>
                                                 ))}
                                                 {/* Display "End of search results" after the last donor */}
                                                 <Text style={styles.endOfResultsText}>
-                                                    End of search results for: "{values.DonorName}"
+                                                    End of search results for: "{props.values.DonorName}"
                                                 </Text>
                                             </>
                                         ) : (
                                             // Only display "No donors found" if no results and no donor is selected
-                                            values.DonorName.length > 0 && !this.state.showLoader && !this.state.selectedDonor && (
+                                            props.values.DonorName.length > 0 && this.state.searchClicked && !this.state.showLoader && !this.state.selectedDonor && (
                                                 <Text>No donors found</Text>
                                             )
                                         )}
@@ -223,31 +269,7 @@ export default class SearchDonor extends React.Component {
                                     </View>
 
                                     {/* Submit Button */}
-                                    <Button
-                                        title="DONATE"
-                                        onPress={() => {
-                                            const { searchType, selectedDonor } = this.state;
-
-                                            if (searchType === 2 || searchType === 3) { // Lead or Corporate Donation
-                                                this.props.navigation.navigate('LeadEdit', {
-                                                    navigation: this.props.navigation,
-                                                    selectedDonor,
-                                                    formikValues: values,
-                                                });
-                                            } else {
-                                                // Individual Donor case
-                                                this.props.navigation.navigate('AddDonor', {
-                                                    navigation: this.props.navigation,
-                                                    selectedDonor,
-                                                    formikValues: values,
-                                                });
-                                            }
-
-                                            setSelectedDonor(selectedDonor); // Store the selected donor
-                                        }}
-                                        disabled={!this.state.selectedDonor} // Disable if no donor selected
-                                    />
-
+                                    <Button style = {globalStyles.button} title="Donate" onPress={props.handleSubmit} />
 
                                 </View>
                             </ScrollView>
@@ -321,4 +343,21 @@ const styles = StyleSheet.create({
         color: '#000',
         textAlign: 'center', // Center the message
     },
+      searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
+  },
+  inputText: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 8,
+  },
+  searchButton: {
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
 });
