@@ -234,7 +234,7 @@ export default class AddDonor extends React.Component{
             "rhNo": getRainbowHome().stateNetworkNo,
             "panNumber": donorDetails.PAN,
             "sponsorName": donorDetails.DonorName,
-            "source" : donorDetails.Source
+            "donorSourceId" : donorDetails.Source
         });
         console.log(donor_request_body)
 

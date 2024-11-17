@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Text, TextInput, View, Picker, ScrollView,
-    KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity} from 'react-native';
+    KeyboardAvoidingView , Image, StyleSheet, Alert, TouchableOpacity, YellowBox} from 'react-native';
 import MultiSelect from 'react-native-multiple-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Feather} from '@expo/vector-icons';
@@ -21,7 +21,7 @@ import base64 from 'react-native-base64';
 import {getPassword, getUserName} from '../constants/LoginConstant';
 
 const IndividualContributionSchema1 = yup.object({
-    City: yup.string().required(),
+    City: yup.string(),
     Home: yup.string().required(),
     DonationDate: yup.string().required(),
     ProgramType: yup.string().required(),
@@ -30,9 +30,6 @@ const IndividualContributionSchema1 = yup.object({
     Quantity: yup.number().required().min(0)
 });
 
-let imagePath = null;
-
-const defaultImg = require('../assets/person.png');
 
 export default class IndividualContribution1 extends React.Component{
     constructor(props) {
@@ -181,6 +178,7 @@ export default class IndividualContribution1 extends React.Component{
         console.log(this.state.orgid)
         this.addDonorConstants();
         this.fetchItemsData();
+        YellowBox.ignoreWarnings(['VirtualizedLists should never be nested']);
     }
 
     _pickDd = (event,date,handleChange) => {
